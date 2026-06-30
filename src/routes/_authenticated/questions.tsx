@@ -39,7 +39,7 @@ function QuestionsPage() {
 
   async function load() {
     setLoading(true);
-    const { data, error } = await supabase.from("questions" as any).select("*").order("created_at", { ascending: false });
+    const { data, error } = await (supabase as any).from("questions").select("*").order("created_at", { ascending: false });
     if (error) toast.error(error.message);
     setItems((data as any) ?? []);
     setLoading(false);
@@ -56,14 +56,14 @@ function QuestionsPage() {
 
   async function remove(id: string) {
     if (!confirm("Delete this question?")) return;
-    const { error } = await supabase.from("questions" as any).delete().eq("id", id);
+    const { error } = await (supabase as any).from("questions").delete().eq("id", id);
     if (error) return toast.error(error.message);
     toast.success("Deleted");
     load();
   }
 
   async function toggleFav(q: Q) {
-    await supabase.from("questions" as any).update({ is_favorite: !q.is_favorite }).eq("id", q.id);
+    await (supabase as any).from("questions").update({ is_favorite: !q.is_favorite }).eq("id", q.id);
     load();
   }
 
@@ -156,8 +156,8 @@ function QuestionDialog({ editing, onDone }: { editing: Q | null; onDone: () => 
     if (!u.user) return;
     const payload = { category: category.trim() || "General", question: question.trim(), answer: answer.trim() || null, difficulty };
     const { error } = editing
-      ? await supabase.from("questions" as any).update(payload).eq("id", editing.id)
-      : await supabase.from("questions" as any).insert({ ...payload, user_id: u.user.id });
+      ? await (supabase as any).from("questions").update(payload).eq("id", editing.id)
+      : await (supabase as any).from("questions").insert({ ...payload, user_id: u.user.id });
     setSaving(false);
     if (error) return toast.error(error.message);
     toast.success(editing ? "Updated" : "Added");

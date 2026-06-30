@@ -24,7 +24,7 @@ function NotesPage() {
   const [saving, setSaving] = useState(false);
 
   async function load() {
-    const { data } = await supabase.from("notes" as any).select("*").order("updated_at", { ascending: false });
+    const { data } = await (supabase as any).from("notes").select("*").order("updated_at", { ascending: false });
     setItems((data as any) ?? []);
   }
   useEffect(() => { load(); }, []);
@@ -38,7 +38,7 @@ function NotesPage() {
   async function createNew() {
     const { data: u } = await supabase.auth.getUser();
     if (!u.user) return;
-    const { data, error } = await supabase.from("notes" as any).insert({ user_id: u.user.id, title: "Untitled note", content: "", topic: null }).select().single();
+    const { data, error } = await (supabase as any).from("notes").insert({ user_id: u.user.id, title: "Untitled note", content: "", topic: null }).select().single();
     if (error) return toast.error(error.message);
     await load();
     setActive(data as any);
@@ -47,7 +47,7 @@ function NotesPage() {
   async function save() {
     if (!active) return;
     setSaving(true);
-    const { error } = await supabase.from("notes" as any).update({ title: title || "Untitled", content, topic: topic || null }).eq("id", active.id);
+    const { error } = await (supabase as any).from("notes").update({ title: title || "Untitled", content, topic: topic || null }).eq("id", active.id);
     setSaving(false);
     if (error) return toast.error(error.message);
     toast.success("Saved");
@@ -56,7 +56,7 @@ function NotesPage() {
 
   async function remove(id: string) {
     if (!confirm("Delete this note?")) return;
-    await supabase.from("notes" as any).delete().eq("id", id);
+    await (supabase as any).from("notes").delete().eq("id", id);
     if (active?.id === id) setActive(null);
     load();
   }

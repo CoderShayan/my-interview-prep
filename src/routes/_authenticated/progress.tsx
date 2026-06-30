@@ -25,7 +25,7 @@ function ProgressPage() {
   const [notes, setNotes] = useState("");
 
   async function load() {
-    const { data } = await supabase.from("progress" as any).select("*").order("last_reviewed", { ascending: false });
+    const { data } = await (supabase as any).from("progress").select("*").order("last_reviewed", { ascending: false });
     setItems((data as any) ?? []);
   }
   useEffect(() => { load(); }, []);
@@ -34,7 +34,7 @@ function ProgressPage() {
     if (!topic.trim()) return toast.error("Topic required");
     const { data: u } = await supabase.auth.getUser();
     if (!u.user) return;
-    const { error } = await supabase.from("progress" as any).insert({
+    const { error } = await (supabase as any).from("progress").insert({
       user_id: u.user.id, topic: topic.trim(), confidence, notes: notes.trim() || null,
     });
     if (error) return toast.error(error.message);
@@ -43,19 +43,19 @@ function ProgressPage() {
   }
 
   async function updateConfidence(id: string, c: number) {
-    await supabase.from("progress" as any).update({ confidence: c, last_reviewed: new Date().toISOString() }).eq("id", id);
+    await (supabase as any).from("progress").update({ confidence: c, last_reviewed: new Date().toISOString() }).eq("id", id);
     load();
   }
 
   async function markReviewed(id: string) {
-    await supabase.from("progress" as any).update({ last_reviewed: new Date().toISOString() }).eq("id", id);
+    await (supabase as any).from("progress").update({ last_reviewed: new Date().toISOString() }).eq("id", id);
     toast.success("Marked as reviewed");
     load();
   }
 
   async function remove(id: string) {
     if (!confirm("Delete this topic?")) return;
-    await supabase.from("progress" as any).delete().eq("id", id);
+    await (supabase as any).from("progress").delete().eq("id", id);
     load();
   }
 

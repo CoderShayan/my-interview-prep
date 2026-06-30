@@ -18,10 +18,10 @@ function Dashboard() {
       const { data: u } = await supabase.auth.getUser();
       setUserEmail(u.user?.email ?? "");
       const [q, n, p, s] = await Promise.all([
-        supabase.from("questions" as any).select("*", { count: "exact", head: true }),
-        supabase.from("notes" as any).select("*", { count: "exact", head: true }),
-        supabase.from("progress" as any).select("*", { count: "exact", head: true }),
-        supabase.from("interview_sessions" as any).select("*", { count: "exact", head: true }),
+        (supabase as any).from("questions").select("*", { count: "exact", head: true }),
+        (supabase as any).from("notes").select("*", { count: "exact", head: true }),
+        (supabase as any).from("progress").select("*", { count: "exact", head: true }),
+        (supabase as any).from("interview_sessions").select("*", { count: "exact", head: true }),
       ]);
       setStats({
         questions: q.count ?? 0,

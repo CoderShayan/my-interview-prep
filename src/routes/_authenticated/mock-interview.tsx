@@ -30,7 +30,7 @@ function MockInterviewPage() {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   async function loadSessions() {
-    const { data } = await supabase.from("interview_sessions" as any).select("*").order("created_at", { ascending: false });
+    const { data } = await (supabase as any).from("interview_sessions").select("*").order("created_at", { ascending: false });
     setSessions((data as any) ?? []);
     if (!active && data && data.length) setActive((data as any)[0]);
   }
@@ -39,7 +39,7 @@ function MockInterviewPage() {
   useEffect(() => {
     if (!active) { setMessages([]); return; }
     (async () => {
-      const { data } = await supabase.from("interview_messages" as any).select("*").eq("session_id", active.id).order("created_at");
+      const { data } = await (supabase as any).from("interview_messages").select("*").eq("session_id", active.id).order("created_at");
       setMessages((data as any) ?? []);
     })();
   }, [active]);
@@ -50,7 +50,7 @@ function MockInterviewPage() {
     if (!newTopic.trim()) return toast.error("Topic required");
     const { data: u } = await supabase.auth.getUser();
     if (!u.user) return;
-    const { data, error } = await supabase.from("interview_sessions" as any).insert({
+    const { data, error } = await (supabase as any).from("interview_sessions").insert({
       user_id: u.user.id, topic: newTopic.trim(), title: newTopic.trim(),
     }).select().single();
     if (error) return toast.error(error.message);
@@ -61,10 +61,10 @@ function MockInterviewPage() {
     setSending(true);
     try {
       const { reply } = await aiReply({ data: { topic: (data as any).topic, messages: [] } });
-      await supabase.from("interview_messages" as any).insert({
+      await (supabase as any).from("interview_messages").insert({
         session_id: (data as any).id, user_id: u.user.id, role: "assistant", content: reply,
       });
-      const { data: msgs } = await supabase.from("interview_messages" as any).select("*").eq("session_id", (data as any).id).order("created_at");
+      const { data: msgs } = await (supabase as any).from("interview_messages").select("*").eq("session_id", (data as any).id).order("created_at");
       setMessages((msgs as any) ?? []);
     } catch (e: any) {
       toast.error(e.message);
@@ -78,14 +78,14 @@ function MockInterviewPage() {
     setSending(true);
     const { data: u } = await supabase.auth.getUser();
     if (!u.user) return;
-    const { data: userMsg } = await supabase.from("interview_messages" as any).insert({
+    const { data: userMsg } = await (supabase as any).from("interview_messages").insert({
       session_id: active.id, user_id: u.user.id, role: "user", content: text,
     }).select().single();
     setMessages((m) => [...m, userMsg as any]);
     try {
       const history = [...messages, userMsg as any].map((m: any) => ({ role: m.role, content: m.content }));
       const { reply } = await aiReply({ data: { topic: active.topic ?? "", messages: history } });
-      const { data: aiMsg } = await supabase.from("interview_messages" as any).insert({
+      const { data: aiMsg } = await (supabase as any).from("interview_messages").insert({
         session_id: active.id, user_id: u.user.id, role: "assistant", content: reply,
       }).select().single();
       setMessages((m) => [...m, aiMsg as any]);
@@ -96,7 +96,7 @@ function MockInterviewPage() {
 
   async function deleteSession(id: string) {
     if (!confirm("Delete this interview session?")) return;
-    await supabase.from("interview_sessions" as any).delete().eq("id", id);
+    await (supabase as any).from("interview_sessions").delete().eq("id", id);
     if (active?.id === id) setActive(null);
     loadSessions();
   }
