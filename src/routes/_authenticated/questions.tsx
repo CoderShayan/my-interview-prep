@@ -37,6 +37,7 @@ function QuestionsPage() {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [filterCat, setFilterCat] = useState<string>("all");
+  const [viewing, setViewing] = useState<Q | null>(null);
 
   async function load() {
     setLoading(true);
