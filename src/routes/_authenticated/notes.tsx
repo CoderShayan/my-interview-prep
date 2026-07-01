@@ -100,9 +100,14 @@ function NotesPage() {
                 <Button variant="ghost" size="sm" onClick={() => remove(active.id)}>
                   <Trash2 className="w-4 h-4 mr-1 text-destructive" /> Delete
                 </Button>
-                <Button onClick={save} disabled={saving}>
-                  <Save className="w-4 h-4 mr-1" /> {saving ? "Saving…" : "Save"}
-                </Button>
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={() => setReading(true)} disabled={!content.trim()}>
+                    <BookOpen className="w-4 h-4 mr-1" /> Read
+                  </Button>
+                  <Button onClick={save} disabled={saving}>
+                    <Save className="w-4 h-4 mr-1" /> {saving ? "Saving…" : "Save"}
+                  </Button>
+                </div>
               </div>
             </div>
           </Card>
