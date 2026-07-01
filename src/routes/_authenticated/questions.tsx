@@ -115,7 +115,14 @@ function QuestionsPage() {
                     <Badge variant={q.difficulty === "hard" ? "destructive" : q.difficulty === "easy" ? "default" : "outline"}>{q.difficulty}</Badge>
                   </div>
                   <h3 className="font-semibold text-base">{q.question}</h3>
-                  {q.answer && <p className="text-sm text-muted-foreground mt-2 whitespace-pre-wrap">{q.answer}</p>}
+                  {q.answer && (
+                    <p className="text-sm text-muted-foreground mt-2 line-clamp-2 whitespace-pre-wrap">{q.answer}</p>
+                  )}
+                  <div className="mt-3">
+                    <Button variant="outline" size="sm" onClick={() => setViewing(q)}>
+                      <BookOpen className="w-4 h-4 mr-1" /> Read
+                    </Button>
+                  </div>
                 </div>
                 <div className="flex flex-col gap-1">
                   <Button variant="ghost" size="icon" onClick={() => toggleFav(q)}>
