@@ -24,6 +24,7 @@ function NotesPage() {
   const [content, setContent] = useState("");
   const [topic, setTopic] = useState("");
   const [saving, setSaving] = useState(false);
+  const [reading, setReading] = useState(false);
 
   async function load() {
     const { data } = await (supabase as any).from("notes").select("*").order("updated_at", { ascending: false });
