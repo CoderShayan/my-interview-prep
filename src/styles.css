@@ -119,3 +119,53 @@
   * { border-color: var(--color-border); }
   body { background-color: var(--color-background); color: var(--color-foreground); }
 }
+
+.prose-reader {
+  color: var(--foreground);
+  font-size: 1rem;
+  line-height: 1.75;
+  word-wrap: break-word;
+}
+.prose-reader > * + * { margin-top: 1rem; }
+.prose-reader h1 { font-size: 1.875rem; font-weight: 700; margin-top: 1.5rem; letter-spacing: -0.02em; }
+.prose-reader h2 { font-size: 1.5rem; font-weight: 700; margin-top: 1.5rem; letter-spacing: -0.01em; }
+.prose-reader h3 { font-size: 1.25rem; font-weight: 600; margin-top: 1.25rem; }
+.prose-reader h4 { font-size: 1.1rem; font-weight: 600; margin-top: 1rem; }
+.prose-reader p { margin: 0.5rem 0; }
+.prose-reader a { color: var(--primary); text-decoration: underline; text-underline-offset: 3px; }
+.prose-reader strong { font-weight: 700; }
+.prose-reader em { font-style: italic; }
+.prose-reader ul { list-style: disc; padding-left: 1.5rem; }
+.prose-reader ol { list-style: decimal; padding-left: 1.5rem; }
+.prose-reader li { margin: 0.25rem 0; }
+.prose-reader li > p { margin: 0.25rem 0; }
+.prose-reader blockquote {
+  border-left: 4px solid var(--primary);
+  padding: 0.25rem 0 0.25rem 1rem;
+  color: var(--muted-foreground);
+  font-style: italic;
+  background: color-mix(in oklab, var(--primary) 6%, transparent);
+  border-radius: 0.25rem;
+}
+.prose-reader code {
+  background: var(--muted);
+  padding: 0.15rem 0.4rem;
+  border-radius: 0.3rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.9em;
+}
+.prose-reader pre {
+  background: var(--muted);
+  color: var(--foreground);
+  padding: 1rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  font-size: 0.9em;
+  line-height: 1.6;
+}
+.prose-reader pre code { background: transparent; padding: 0; border-radius: 0; }
+.prose-reader hr { border: 0; border-top: 1px solid var(--border); margin: 1.5rem 0; }
+.prose-reader table { width: 100%; border-collapse: collapse; font-size: 0.95em; }
+.prose-reader th, .prose-reader td { border: 1px solid var(--border); padding: 0.5rem 0.75rem; text-align: left; }
+.prose-reader th { background: var(--muted); font-weight: 600; }
+.prose-reader img { max-width: 100%; border-radius: 0.5rem; }

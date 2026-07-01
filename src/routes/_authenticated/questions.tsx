@@ -9,8 +9,9 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, Pencil, Star, Search } from "lucide-react";
+import { Plus, Trash2, Pencil, Star, Search, BookOpen } from "lucide-react";
 import { toast } from "sonner";
+import { MarkdownView } from "@/components/markdown-view";
 
 export const Route = createFileRoute("/_authenticated/questions")({
   head: () => ({ meta: [{ title: "Questions — PrepDesk" }] }),
@@ -36,6 +37,7 @@ function QuestionsPage() {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [filterCat, setFilterCat] = useState<string>("all");
+  const [viewing, setViewing] = useState<Q | null>(null);
 
   async function load() {
     setLoading(true);
@@ -113,7 +115,14 @@ function QuestionsPage() {
                     <Badge variant={q.difficulty === "hard" ? "destructive" : q.difficulty === "easy" ? "default" : "outline"}>{q.difficulty}</Badge>
                   </div>
                   <h3 className="font-semibold text-base">{q.question}</h3>
-                  {q.answer && <p className="text-sm text-muted-foreground mt-2 whitespace-pre-wrap">{q.answer}</p>}
+                  {q.answer && (
+                    <p className="text-sm text-muted-foreground mt-2 line-clamp-2 whitespace-pre-wrap">{q.answer}</p>
+                  )}
+                  <div className="mt-3">
+                    <Button variant="outline" size="sm" onClick={() => setViewing(q)}>
+                      <BookOpen className="w-4 h-4 mr-1" /> Read
+                    </Button>
+                  </div>
                 </div>
                 <div className="flex flex-col gap-1">
                   <Button variant="ghost" size="icon" onClick={() => toggleFav(q)}>
@@ -131,6 +140,27 @@ function QuestionsPage() {
           ))}
         </div>
       )}
+
+      <Dialog open={!!viewing} onOpenChange={(v) => !v && setViewing(null)}>
+        <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
+          {viewing && (
+            <>
+              <DialogHeader>
+                <div className="flex items-center gap-2 flex-wrap mb-2">
+                  <Badge variant="secondary">{viewing.category}</Badge>
+                  <Badge variant={viewing.difficulty === "hard" ? "destructive" : viewing.difficulty === "easy" ? "default" : "outline"}>{viewing.difficulty}</Badge>
+                  {viewing.is_favorite && <Badge className="bg-amber-400 text-amber-950 hover:bg-amber-400">★ Favorite</Badge>}
+                </div>
+                <DialogTitle className="text-2xl leading-snug">{viewing.question}</DialogTitle>
+              </DialogHeader>
+              <div className="mt-2">
+                <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">Answer</h4>
+                <MarkdownView content={viewing.answer ?? ""} />
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

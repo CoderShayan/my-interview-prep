@@ -5,8 +5,10 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Trash2, Save } from "lucide-react";
+import { Plus, Trash2, Save, BookOpen } from "lucide-react";
 import { toast } from "sonner";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { MarkdownView } from "@/components/markdown-view";
 
 export const Route = createFileRoute("/_authenticated/notes")({
   head: () => ({ meta: [{ title: "Notes — PrepDesk" }] }),
@@ -22,6 +24,7 @@ function NotesPage() {
   const [content, setContent] = useState("");
   const [topic, setTopic] = useState("");
   const [saving, setSaving] = useState(false);
+  const [reading, setReading] = useState(false);
 
   async function load() {
     const { data } = await (supabase as any).from("notes").select("*").order("updated_at", { ascending: false });
@@ -62,6 +65,7 @@ function NotesPage() {
   }
 
   return (
+    <>
     <div className="max-w-6xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <div>
@@ -97,9 +101,14 @@ function NotesPage() {
                 <Button variant="ghost" size="sm" onClick={() => remove(active.id)}>
                   <Trash2 className="w-4 h-4 mr-1 text-destructive" /> Delete
                 </Button>
-                <Button onClick={save} disabled={saving}>
-                  <Save className="w-4 h-4 mr-1" /> {saving ? "Saving…" : "Save"}
-                </Button>
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={() => setReading(true)} disabled={!content.trim()}>
+                    <BookOpen className="w-4 h-4 mr-1" /> Read
+                  </Button>
+                  <Button onClick={save} disabled={saving}>
+                    <Save className="w-4 h-4 mr-1" /> {saving ? "Saving…" : "Save"}
+                  </Button>
+                </div>
               </div>
             </div>
           </Card>
@@ -110,5 +119,16 @@ function NotesPage() {
         )}
       </div>
     </div>
+
+    <Dialog open={reading} onOpenChange={setReading}>
+      <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-2xl">{title || "Untitled"}</DialogTitle>
+          {topic && <p className="text-sm text-muted-foreground">{topic}</p>}
+        </DialogHeader>
+        <MarkdownView content={content} />
+      </DialogContent>
+    </Dialog>
+    </>
   );
 }
