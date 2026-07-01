@@ -140,6 +140,27 @@ function QuestionsPage() {
           ))}
         </div>
       )}
+
+      <Dialog open={!!viewing} onOpenChange={(v) => !v && setViewing(null)}>
+        <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
+          {viewing && (
+            <>
+              <DialogHeader>
+                <div className="flex items-center gap-2 flex-wrap mb-2">
+                  <Badge variant="secondary">{viewing.category}</Badge>
+                  <Badge variant={viewing.difficulty === "hard" ? "destructive" : viewing.difficulty === "easy" ? "default" : "outline"}>{viewing.difficulty}</Badge>
+                  {viewing.is_favorite && <Badge className="bg-amber-400 text-amber-950 hover:bg-amber-400">★ Favorite</Badge>}
+                </div>
+                <DialogTitle className="text-2xl leading-snug">{viewing.question}</DialogTitle>
+              </DialogHeader>
+              <div className="mt-2">
+                <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">Answer</h4>
+                <MarkdownView content={viewing.answer ?? ""} />
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
