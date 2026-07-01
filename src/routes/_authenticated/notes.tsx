@@ -118,5 +118,16 @@ function NotesPage() {
         )}
       </div>
     </div>
+
+    <Dialog open={reading} onOpenChange={setReading}>
+      <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-2xl">{title || "Untitled"}</DialogTitle>
+          {topic && <p className="text-sm text-muted-foreground">{topic}</p>}
+        </DialogHeader>
+        <MarkdownView content={content} />
+      </DialogContent>
+    </Dialog>
+    </>
   );
 }
