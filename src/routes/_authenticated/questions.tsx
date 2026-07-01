@@ -37,7 +37,10 @@ function QuestionsPage() {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [filterCat, setFilterCat] = useState<string>("all");
-  const [viewing, setViewing] = useState<Q | null>(null);
+  const [viewingId, setViewingId] = useState<string | null>(null);
+  const [swipeDir, setSwipeDir] = useState<"left" | "right" | null>(null);
+  const touchStartX = useRef<number | null>(null);
+  const touchStartY = useRef<number | null>(null);
 
   async function load() {
     setLoading(true);
