@@ -122,7 +122,7 @@ function QuestionsPage() {
                     <p className="text-sm text-muted-foreground mt-2 line-clamp-2 whitespace-pre-wrap">{q.answer}</p>
                   )}
                   <div className="mt-3">
-                    <Button variant="outline" size="sm" onClick={() => setViewing(q)}>
+                    <Button variant="outline" size="sm" onClick={() => setViewingId(q.id)}>
                       <BookOpen className="w-4 h-4 mr-1" /> Read
                     </Button>
                   </div>
@@ -144,27 +144,148 @@ function QuestionsPage() {
         </div>
       )}
 
-      <Dialog open={!!viewing} onOpenChange={(v) => !v && setViewing(null)}>
-        <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
-          {viewing && (
-            <>
-              <DialogHeader>
-                <div className="flex items-center gap-2 flex-wrap mb-2">
-                  <Badge variant="secondary">{viewing.category}</Badge>
-                  <Badge variant={viewing.difficulty === "hard" ? "destructive" : viewing.difficulty === "easy" ? "default" : "outline"}>{viewing.difficulty}</Badge>
-                  {viewing.is_favorite && <Badge className="bg-amber-400 text-amber-950 hover:bg-amber-400">★ Favorite</Badge>}
-                </div>
-                <DialogTitle className="text-2xl leading-snug">{viewing.question}</DialogTitle>
-              </DialogHeader>
-              <div className="mt-2">
-                <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">Answer</h4>
-                <MarkdownView content={viewing.answer ?? ""} />
-              </div>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
+      <ReaderDialog
+        list={filtered}
+        viewingId={viewingId}
+        onClose={() => setViewingId(null)}
+        onNavigate={setViewingId}
+        onToggleFav={toggleFav}
+        swipeDir={swipeDir}
+        setSwipeDir={setSwipeDir}
+        touchStartX={touchStartX}
+        touchStartY={touchStartY}
+      />
     </div>
+  );
+}
+
+function ReaderDialog({
+  list,
+  viewingId,
+  onClose,
+  onNavigate,
+  onToggleFav,
+  swipeDir,
+  setSwipeDir,
+  touchStartX,
+  touchStartY,
+}: {
+  list: Q[];
+  viewingId: string | null;
+  onClose: () => void;
+  onNavigate: (id: string) => void;
+  onToggleFav: (q: Q) => void;
+  swipeDir: "left" | "right" | null;
+  setSwipeDir: (d: "left" | "right" | null) => void;
+  touchStartX: React.MutableRefObject<number | null>;
+  touchStartY: React.MutableRefObject<number | null>;
+}) {
+  const idx = list.findIndex((q) => q.id === viewingId);
+  const viewing = idx >= 0 ? list[idx] : null;
+  const hasPrev = idx > 0;
+  const hasNext = idx >= 0 && idx < list.length - 1;
+
+  function go(dir: "next" | "prev") {
+    if (dir === "next" && hasNext) {
+      setSwipeDir("left");
+      setTimeout(() => { onNavigate(list[idx + 1].id); setSwipeDir(null); }, 120);
+    } else if (dir === "prev" && hasPrev) {
+      setSwipeDir("right");
+      setTimeout(() => { onNavigate(list[idx - 1].id); setSwipeDir(null); }, 120);
+    }
+  }
+
+  useEffect(() => {
+    if (!viewing) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "ArrowRight") go("next");
+      else if (e.key === "ArrowLeft") go("prev");
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [viewing?.id, hasNext, hasPrev]);
+
+  return (
+    <Dialog open={!!viewing} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent className="max-w-3xl w-[95vw] max-h-[90vh] overflow-hidden p-0 gap-0">
+        {viewing && (
+          <div
+            className="flex flex-col max-h-[90vh]"
+            onTouchStart={(e) => {
+              touchStartX.current = e.touches[0].clientX;
+              touchStartY.current = e.touches[0].clientY;
+            }}
+            onTouchEnd={(e) => {
+              if (touchStartX.current == null || touchStartY.current == null) return;
+              const dx = e.changedTouches[0].clientX - touchStartX.current;
+              const dy = e.changedTouches[0].clientY - touchStartY.current;
+              if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy)) {
+                if (dx < 0) go("next");
+                else go("prev");
+              }
+              touchStartX.current = null;
+              touchStartY.current = null;
+            }}
+          >
+            {/* Header */}
+            <div className="px-6 pt-6 pb-4 border-b bg-gradient-to-br from-primary/5 to-transparent">
+              <div className="flex items-center justify-between mb-3">
+                <div className="text-xs font-medium text-muted-foreground">
+                  Question {idx + 1} of {list.length}
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => onToggleFav(viewing)}
+                  className="h-8 w-8"
+                >
+                  <Star className={`w-4 h-4 ${viewing.is_favorite ? "fill-amber-400 text-amber-400" : ""}`} />
+                </Button>
+              </div>
+              <div className="flex items-center gap-2 flex-wrap mb-3">
+                <Badge variant="secondary">{viewing.category}</Badge>
+                <Badge variant={viewing.difficulty === "hard" ? "destructive" : viewing.difficulty === "easy" ? "default" : "outline"}>
+                  {viewing.difficulty}
+                </Badge>
+              </div>
+              <DialogHeader>
+                <DialogTitle className="text-xl md:text-2xl leading-snug tracking-tight">
+                  {viewing.question}
+                </DialogTitle>
+              </DialogHeader>
+            </div>
+
+            {/* Body */}
+            <div
+              key={viewing.id}
+              className={`flex-1 overflow-y-auto px-6 py-6 transition-all duration-150 ${
+                swipeDir === "left" ? "-translate-x-4 opacity-0" :
+                swipeDir === "right" ? "translate-x-4 opacity-0" : "translate-x-0 opacity-100"
+              }`}
+            >
+              <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">
+                Answer
+              </h4>
+              <MarkdownView content={viewing.answer ?? ""} />
+            </div>
+
+            {/* Footer nav */}
+            <div className="px-4 py-3 border-t bg-muted/30 flex items-center justify-between gap-2">
+              <Button variant="outline" size="sm" onClick={() => go("prev")} disabled={!hasPrev}>
+                <ChevronLeft className="w-4 h-4 mr-1" /> Prev
+              </Button>
+              <div className="hidden sm:block text-xs text-muted-foreground">
+                Swipe or use ← → keys
+              </div>
+              <Button size="sm" onClick={() => go("next")} disabled={!hasNext}>
+                Next <ChevronRight className="w-4 h-4 ml-1" />
+              </Button>
+            </div>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }
 
