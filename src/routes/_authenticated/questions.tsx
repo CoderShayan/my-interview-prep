@@ -1,15 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, Pencil, Star, Search, BookOpen, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, Trash2, Pencil, Star, Search, BookOpen, ChevronLeft, ChevronRight, X, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { MarkdownView } from "@/components/markdown-view";
 
@@ -30,6 +28,10 @@ type Q = {
 
 const DIFFICULTIES = ["easy", "medium", "hard"];
 
+function difficultyDot(d: string) {
+  return d === "hard" ? "bg-brand-red" : d === "easy" ? "bg-brand-blue" : "bg-foreground/50";
+}
+
 function QuestionsPage() {
   const [items, setItems] = useState<Q[]>([]);
   const [loading, setLoading] = useState(true);
@@ -37,6 +39,8 @@ function QuestionsPage() {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [filterCat, setFilterCat] = useState<string>("all");
+  const [filterDiff, setFilterDiff] = useState<string>("all");
+  const [favOnly, setFavOnly] = useState(false);
   const [viewingId, setViewingId] = useState<string | null>(null);
   const [swipeDir, setSwipeDir] = useState<"left" | "right" | null>(null);
   const touchStartX = useRef<number | null>(null);
@@ -52,12 +56,20 @@ function QuestionsPage() {
 
   useEffect(() => { load(); }, []);
 
-  const categories = Array.from(new Set(items.map((i) => i.category)));
+  const categories = useMemo(() => Array.from(new Set(items.map((i) => i.category))), [items]);
   const filtered = items.filter((i) => {
     if (filterCat !== "all" && i.category !== filterCat) return false;
+    if (filterDiff !== "all" && i.difficulty !== filterDiff) return false;
+    if (favOnly && !i.is_favorite) return false;
     if (search && !i.question.toLowerCase().includes(search.toLowerCase()) && !(i.answer ?? "").toLowerCase().includes(search.toLowerCase())) return false;
     return true;
   });
+
+  const stats = {
+    total: items.length,
+    favorites: items.filter((i) => i.is_favorite).length,
+    hard: items.filter((i) => i.difficulty === "hard").length,
+  };
 
   async function remove(id: string) {
     if (!confirm("Delete this question?")) return;
@@ -73,73 +85,126 @@ function QuestionsPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto">
-      <div className="flex items-center justify-between mb-6 gap-4 flex-wrap">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Questions Bank</h1>
-          <p className="text-muted-foreground mt-1">{items.length} saved questions</p>
+    <div className="max-w-6xl mx-auto">
+      {/* Header bento */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-6">
+        <div className="panel panel-accent-red md:col-span-2 p-6">
+          <div className="mono-label mb-2">Questions Bank</div>
+          <h1 className="font-display text-3xl md:text-4xl font-bold tracking-tight">Sharpen every answer.</h1>
+          <p className="text-sm text-muted-foreground mt-2">{items.length} saved · practice, review, master.</p>
+          <div className="mt-4">
+            <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) setEditing(null); }}>
+              <DialogTrigger asChild>
+                <Button onClick={() => setEditing(null)}><Plus className="w-4 h-4 mr-1" /> Add question</Button>
+              </DialogTrigger>
+              <QuestionDialog editing={editing} onDone={() => { setOpen(false); setEditing(null); load(); }} />
+            </Dialog>
+          </div>
         </div>
-        <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) setEditing(null); }}>
-          <DialogTrigger asChild>
-            <Button onClick={() => setEditing(null)}><Plus className="w-4 h-4 mr-1" /> Add question</Button>
-          </DialogTrigger>
-          <QuestionDialog editing={editing} onDone={() => { setOpen(false); setEditing(null); load(); }} />
-        </Dialog>
+        <StatTile label="Total" value={stats.total} accent="blue" />
+        <StatTile label="Favorites" value={stats.favorites} accent="red" icon={<Star className="w-4 h-4 fill-amber-400 text-amber-400" />} />
       </div>
 
-      <div className="flex gap-3 mb-6 flex-wrap">
-        <div className="relative flex-1 min-w-[200px]">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <Input placeholder="Search questions..." className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
+      {/* Filter bar */}
+      <div className="panel p-3 mb-5 sticky top-16 z-20 backdrop-blur bg-card/85">
+        <div className="flex gap-2 items-center flex-wrap">
+          <div className="relative flex-1 min-w-[200px]">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <Input placeholder="Search questions or answers…" className="pl-9 h-10 border-0 bg-muted focus-visible:ring-1" value={search} onChange={(e) => setSearch(e.target.value)} />
+          </div>
+          <Button
+            size="sm"
+            variant={favOnly ? "default" : "outline"}
+            onClick={() => setFavOnly((v) => !v)}
+            className="h-10"
+          >
+            <Star className={`w-4 h-4 mr-1 ${favOnly ? "fill-current" : ""}`} /> Favorites
+          </Button>
         </div>
-        <Select value={filterCat} onValueChange={setFilterCat}>
-          <SelectTrigger className="w-[180px]"><SelectValue /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All categories</SelectItem>
-            {categories.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-          </SelectContent>
-        </Select>
+
+        <div className="flex gap-2 items-center flex-wrap mt-3">
+          <span className="mono-label mr-1">Difficulty</span>
+          {["all", ...DIFFICULTIES].map((d) => (
+            <button
+              key={d}
+              onClick={() => setFilterDiff(d)}
+              className={`chip transition ${filterDiff === d ? "!bg-foreground !text-background !border-foreground" : "hover:!border-foreground/40"}`}
+            >
+              {d !== "all" && <span className={`w-1.5 h-1.5 rounded-full ${difficultyDot(d)}`} />}
+              {d}
+            </button>
+          ))}
+        </div>
+
+        {categories.length > 0 && (
+          <div className="flex gap-2 items-center flex-nowrap mt-2 overflow-x-auto pb-1">
+            <span className="mono-label mr-1 shrink-0">Category</span>
+            {["all", ...categories].map((c) => (
+              <button
+                key={c}
+                onClick={() => setFilterCat(c)}
+                className={`chip shrink-0 transition ${filterCat === c ? "!bg-primary !text-primary-foreground !border-primary" : "hover:!border-primary/50"}`}
+              >
+                {c}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {loading ? (
         <p className="text-muted-foreground text-center py-10">Loading…</p>
       ) : filtered.length === 0 ? (
-        <Card className="p-12 text-center">
-          <p className="text-muted-foreground">No questions yet. Add your first one!</p>
-        </Card>
+        <div className="panel p-12 text-center">
+          <p className="text-muted-foreground">No questions match. Try clearing filters or add a new one.</p>
+        </div>
       ) : (
-        <div className="space-y-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {filtered.map((q) => (
-            <Card key={q.id} className="p-5">
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-2 flex-wrap">
-                    <Badge variant="secondary">{q.category}</Badge>
-                    <Badge variant={q.difficulty === "hard" ? "destructive" : q.difficulty === "easy" ? "default" : "outline"}>{q.difficulty}</Badge>
-                  </div>
-                  <h3 className="font-semibold text-base">{q.question}</h3>
-                  {q.answer && (
-                    <p className="text-sm text-muted-foreground mt-2 line-clamp-2 whitespace-pre-wrap">{q.answer}</p>
-                  )}
-                  <div className="mt-3">
-                    <Button variant="outline" size="sm" onClick={() => setViewingId(q.id)}>
-                      <BookOpen className="w-4 h-4 mr-1" /> Read
-                    </Button>
-                  </div>
+            <div
+              key={q.id}
+              onClick={() => setViewingId(q.id)}
+              className="panel panel-hover p-5 flex flex-col cursor-pointer group"
+            >
+              <div className="flex items-start justify-between gap-2 mb-3">
+                <div className="flex items-center gap-2 min-w-0 flex-wrap">
+                  <span className="chip !bg-muted">{q.category}</span>
+                  <span className="chip">
+                    <span className={`w-1.5 h-1.5 rounded-full ${difficultyDot(q.difficulty)}`} />
+                    {q.difficulty}
+                  </span>
                 </div>
-                <div className="flex flex-col gap-1">
-                  <Button variant="ghost" size="icon" onClick={() => toggleFav(q)}>
-                    <Star className={`w-4 h-4 ${q.is_favorite ? "fill-amber-400 text-amber-400" : ""}`} />
+                <button
+                  onClick={(e) => { e.stopPropagation(); toggleFav(q); }}
+                  className="shrink-0 -mt-1 -mr-1 p-1.5 rounded-md hover:bg-muted transition"
+                  aria-label="Favorite"
+                >
+                  <Star className={`w-4 h-4 ${q.is_favorite ? "fill-amber-400 text-amber-400" : "text-muted-foreground"}`} />
+                </button>
+              </div>
+
+              <h3 className="font-display font-semibold text-[15px] leading-snug line-clamp-3 min-h-[3.4rem]">
+                {q.question}
+              </h3>
+
+              {q.answer && (
+                <p className="text-[13px] text-muted-foreground mt-3 line-clamp-3 leading-relaxed">
+                  {q.answer.replace(/[#*`>_-]+/g, " ").slice(0, 180)}
+                </p>
+              )}
+
+              <div className="mt-4 pt-3 border-t border-border/60 flex items-center justify-between opacity-70 group-hover:opacity-100 transition">
+                <span className="mono-label inline-flex items-center gap-1"><BookOpen className="w-3 h-3" /> Read</span>
+                <div className="flex gap-1">
+                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); setEditing(q); setOpen(true); }}>
+                    <Pencil className="w-3.5 h-3.5" />
                   </Button>
-                  <Button variant="ghost" size="icon" onClick={() => { setEditing(q); setOpen(true); }}>
-                    <Pencil className="w-4 h-4" />
-                  </Button>
-                  <Button variant="ghost" size="icon" onClick={() => remove(q.id)}>
-                    <Trash2 className="w-4 h-4 text-destructive" />
+                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); remove(q.id); }}>
+                    <Trash2 className="w-3.5 h-3.5 text-destructive" />
                   </Button>
                 </div>
               </div>
-            </Card>
+            </div>
           ))}
         </div>
       )}
@@ -159,16 +224,21 @@ function QuestionsPage() {
   );
 }
 
+function StatTile({ label, value, accent, icon }: { label: string; value: number | string; accent: "red" | "blue"; icon?: React.ReactNode }) {
+  return (
+    <div className={`panel p-5 flex flex-col justify-between ${accent === "red" ? "panel-accent-red" : "panel-accent-blue"}`}>
+      <div className="flex items-center justify-between">
+        <span className="mono-label">{label}</span>
+        {icon}
+      </div>
+      <div className="stat-num mt-3">{value}</div>
+    </div>
+  );
+}
+
 function ReaderDialog({
-  list,
-  viewingId,
-  onClose,
-  onNavigate,
-  onToggleFav,
-  swipeDir,
-  setSwipeDir,
-  touchStartX,
-  touchStartY,
+  list, viewingId, onClose, onNavigate, onToggleFav,
+  swipeDir, setSwipeDir, touchStartX, touchStartY,
 }: {
   list: Q[];
   viewingId: string | null;
@@ -180,18 +250,20 @@ function ReaderDialog({
   touchStartX: React.MutableRefObject<number | null>;
   touchStartY: React.MutableRefObject<number | null>;
 }) {
+  const [reviewed, setReviewed] = useState<Set<string>>(new Set());
   const idx = list.findIndex((q) => q.id === viewingId);
   const viewing = idx >= 0 ? list[idx] : null;
   const hasPrev = idx > 0;
   const hasNext = idx >= 0 && idx < list.length - 1;
+  const progress = list.length ? ((idx + 1) / list.length) * 100 : 0;
 
   function go(dir: "next" | "prev") {
     if (dir === "next" && hasNext) {
       setSwipeDir("left");
-      setTimeout(() => { onNavigate(list[idx + 1].id); setSwipeDir(null); }, 120);
+      setTimeout(() => { onNavigate(list[idx + 1].id); setSwipeDir(null); }, 160);
     } else if (dir === "prev" && hasPrev) {
       setSwipeDir("right");
-      setTimeout(() => { onNavigate(list[idx - 1].id); setSwipeDir(null); }, 120);
+      setTimeout(() => { onNavigate(list[idx - 1].id); setSwipeDir(null); }, 160);
     }
   }
 
@@ -206,12 +278,21 @@ function ReaderDialog({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [viewing?.id, hasNext, hasPrev]);
 
+  function toggleReviewed() {
+    if (!viewing) return;
+    setReviewed((s) => {
+      const n = new Set(s);
+      if (n.has(viewing.id)) n.delete(viewing.id); else n.add(viewing.id);
+      return n;
+    });
+  }
+
   return (
     <Dialog open={!!viewing} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-w-3xl w-[95vw] max-h-[90vh] overflow-hidden p-0 gap-0">
+      <DialogContent className="max-w-4xl w-[96vw] max-h-[92vh] overflow-hidden p-0 gap-0 border-2">
         {viewing && (
           <div
-            className="flex flex-col max-h-[90vh]"
+            className="flex flex-col max-h-[92vh]"
             onTouchStart={(e) => {
               touchStartX.current = e.touches[0].clientX;
               touchStartY.current = e.touches[0].clientY;
@@ -221,36 +302,46 @@ function ReaderDialog({
               const dx = e.changedTouches[0].clientX - touchStartX.current;
               const dy = e.changedTouches[0].clientY - touchStartY.current;
               if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy)) {
-                if (dx < 0) go("next");
-                else go("prev");
+                if (dx < 0) go("next"); else go("prev");
               }
               touchStartX.current = null;
               touchStartY.current = null;
             }}
           >
+            {/* Progress bar */}
+            <div className="h-1 bg-muted relative">
+              <div className="absolute inset-y-0 left-0 bg-brand-red transition-all duration-300" style={{ width: `${progress}%` }} />
+            </div>
+
             {/* Header */}
-            <div className="px-6 pt-6 pb-4 border-b bg-gradient-to-br from-primary/5 to-transparent">
+            <div className="px-6 md:px-10 pt-6 pb-5 border-b bg-card">
               <div className="flex items-center justify-between mb-3">
-                <div className="text-xs font-medium text-muted-foreground">
-                  Question {idx + 1} of {list.length}
+                <div className="mono-label">
+                  Question <span className="text-foreground">{String(idx + 1).padStart(2, "0")}</span> / {String(list.length).padStart(2, "0")}
                 </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => onToggleFav(viewing)}
-                  className="h-8 w-8"
-                >
-                  <Star className={`w-4 h-4 ${viewing.is_favorite ? "fill-amber-400 text-amber-400" : ""}`} />
-                </Button>
+                <div className="flex items-center gap-1">
+                  <Button variant="ghost" size="icon" onClick={() => onToggleFav(viewing)} className="h-8 w-8" aria-label="Favorite">
+                    <Star className={`w-4 h-4 ${viewing.is_favorite ? "fill-amber-400 text-amber-400" : ""}`} />
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8" aria-label="Close">
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
               <div className="flex items-center gap-2 flex-wrap mb-3">
-                <Badge variant="secondary">{viewing.category}</Badge>
-                <Badge variant={viewing.difficulty === "hard" ? "destructive" : viewing.difficulty === "easy" ? "default" : "outline"}>
+                <span className="chip !bg-muted">{viewing.category}</span>
+                <span className="chip">
+                  <span className={`w-1.5 h-1.5 rounded-full ${difficultyDot(viewing.difficulty)}`} />
                   {viewing.difficulty}
-                </Badge>
+                </span>
+                {reviewed.has(viewing.id) && (
+                  <span className="chip !border-brand-blue text-brand-blue">
+                    <CheckCircle2 className="w-3 h-3" /> Reviewed
+                  </span>
+                )}
               </div>
               <DialogHeader>
-                <DialogTitle className="text-xl md:text-2xl leading-snug tracking-tight">
+                <DialogTitle className="font-display text-2xl md:text-3xl leading-tight tracking-tight">
                   {viewing.question}
                 </DialogTitle>
               </DialogHeader>
@@ -259,24 +350,37 @@ function ReaderDialog({
             {/* Body */}
             <div
               key={viewing.id}
-              className={`flex-1 overflow-y-auto px-6 py-6 transition-all duration-150 ${
-                swipeDir === "left" ? "-translate-x-4 opacity-0" :
-                swipeDir === "right" ? "translate-x-4 opacity-0" : "translate-x-0 opacity-100"
+              className={`flex-1 overflow-y-auto reader-scroll reader-bg transition-all duration-150 ease-out ${
+                swipeDir === "left" ? "-translate-x-6 opacity-0" :
+                swipeDir === "right" ? "translate-x-6 opacity-0" : "translate-x-0 opacity-100"
               }`}
             >
-              <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">
-                Answer
-              </h4>
-              <MarkdownView content={viewing.answer ?? ""} />
+              <div className="reader-shell">
+                <div className="flex items-center gap-3 mb-6">
+                  <span className="h-px flex-1 bg-border" />
+                  <span className="mono-label !text-brand-red">Answer</span>
+                  <span className="h-px flex-1 bg-border" />
+                </div>
+                <MarkdownView content={viewing.answer ?? ""} />
+              </div>
             </div>
 
             {/* Footer nav */}
-            <div className="px-4 py-3 border-t bg-muted/30 flex items-center justify-between gap-2">
+            <div className="px-4 md:px-6 py-3 border-t bg-card flex items-center justify-between gap-2">
               <Button variant="outline" size="sm" onClick={() => go("prev")} disabled={!hasPrev}>
                 <ChevronLeft className="w-4 h-4 mr-1" /> Prev
               </Button>
-              <div className="hidden sm:block text-xs text-muted-foreground">
-                Swipe or use ← → keys
+              <div className="flex items-center gap-3">
+                <Button
+                  size="sm"
+                  variant={reviewed.has(viewing.id) ? "default" : "outline"}
+                  onClick={toggleReviewed}
+                  className="hidden sm:inline-flex"
+                >
+                  <CheckCircle2 className="w-4 h-4 mr-1" />
+                  {reviewed.has(viewing.id) ? "Reviewed" : "Mark reviewed"}
+                </Button>
+                <span className="hidden md:inline mono-label">← → or swipe</span>
               </div>
               <Button size="sm" onClick={() => go("next")} disabled={!hasNext}>
                 Next <ChevronRight className="w-4 h-4 ml-1" />
@@ -342,8 +446,8 @@ function QuestionDialog({ editing, onDone }: { editing: Q | null; onDone: () => 
           <Textarea value={question} onChange={(e) => setQuestion(e.target.value)} rows={3} />
         </div>
         <div className="space-y-2">
-          <Label>Answer / Notes</Label>
-          <Textarea value={answer} onChange={(e) => setAnswer(e.target.value)} rows={6} />
+          <Label>Answer / Notes <span className="text-xs text-muted-foreground">(markdown supported)</span></Label>
+          <Textarea value={answer} onChange={(e) => setAnswer(e.target.value)} rows={8} className="font-mono text-sm" />
         </div>
       </div>
       <DialogFooter>
