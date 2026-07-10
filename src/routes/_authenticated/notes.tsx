@@ -234,65 +234,46 @@ function NotesPage() {
 
       {/* Reader dialog */}
       <Dialog open={!!reading} onOpenChange={(v) => !v && setReadingId(null)}>
-        <DialogContent className="max-w-4xl w-[96vw] max-h-[92vh] overflow-hidden p-0 gap-0 border-2">
+        <DialogContent className="max-w-4xl w-[100vw] sm:w-[96vw] h-[100dvh] sm:h-auto sm:max-h-[92vh] overflow-hidden p-0 gap-0 sm:border-2 rounded-none sm:rounded-lg">
           {reading && (
-            <div
-              className="flex flex-col max-h-[92vh]"
-              onTouchStart={(e) => {
-                touchStartX.current = e.touches[0].clientX;
-                touchStartY.current = e.touches[0].clientY;
-              }}
-              onTouchEnd={(e) => {
-                if (touchStartX.current == null || touchStartY.current == null) return;
-                const dx = e.changedTouches[0].clientX - touchStartX.current;
-                const dy = e.changedTouches[0].clientY - touchStartY.current;
-                if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy)) {
-                  if (dx < 0) readGo("next"); else readGo("prev");
-                }
-                touchStartX.current = null;
-                touchStartY.current = null;
-              }}
-            >
+            <div className="flex flex-col h-[100dvh] sm:h-auto sm:max-h-[92vh]" {...readTouch}>
               <div className="h-1 bg-muted relative">
                 <div className="absolute inset-y-0 left-0 bg-brand-blue transition-all duration-300" style={{ width: `${filtered.length ? ((readIdx + 1) / filtered.length) * 100 : 0}%` }} />
               </div>
-              <div className="px-6 md:px-10 pt-6 pb-5 border-b bg-card">
-                <div className="flex items-center justify-between mb-3">
+              <div className="px-4 md:px-10 pt-4 md:pt-6 pb-4 md:pb-5 border-b bg-card">
+                <div className="flex items-center justify-between mb-2 md:mb-3">
                   <div className="mono-label">
-                    Note <span className="text-foreground">{String(readIdx + 1).padStart(2, "0")}</span> / {String(filtered.length).padStart(2, "0")}
+                    <span className="text-foreground">{String(readIdx + 1).padStart(2, "0")}</span> / {String(filtered.length).padStart(2, "0")}
                   </div>
                   <div className="flex gap-1">
-                    <Button variant="ghost" size="icon" onClick={() => { setActiveId(reading.id); setReadingId(null); }} className="h-8 w-8" aria-label="Edit">
+                    <Button variant="ghost" size="icon" onClick={() => { setActiveId(reading.id); setReadingId(null); }} className="h-9 w-9" aria-label="Edit">
                       <Pencil className="w-4 h-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => setReadingId(null)} className="h-8 w-8" aria-label="Close"><X className="w-4 h-4" /></Button>
+                    <Button variant="ghost" size="icon" onClick={() => setReadingId(null)} className="h-9 w-9" aria-label="Close"><X className="w-4 h-4" /></Button>
                   </div>
                 </div>
-                {reading.topic && <span className="chip !bg-muted mb-3 inline-flex">{reading.topic}</span>}
+                {reading.topic && <span className="chip !bg-muted mb-2 md:mb-3 inline-flex">{reading.topic}</span>}
                 <DialogHeader>
-                  <DialogTitle className="font-display text-2xl md:text-3xl leading-tight tracking-tight">
+                  <DialogTitle className="font-display text-xl md:text-3xl leading-tight tracking-tight">
                     {reading.title || "Untitled"}
                   </DialogTitle>
                 </DialogHeader>
-                <p className="mono-label mt-2">Updated {new Date(reading.updated_at).toLocaleString()}</p>
+                <p className="mono-label mt-2">Updated {new Date(reading.updated_at).toLocaleDateString()}</p>
               </div>
               <div
                 key={reading.id}
-                className={`flex-1 overflow-y-auto reader-scroll reader-bg transition-all duration-150 ease-out ${
-                  swipeDir === "left" ? "-translate-x-6 opacity-0" :
-                  swipeDir === "right" ? "translate-x-6 opacity-0" : "translate-x-0 opacity-100"
-                }`}
+                className={`flex-1 overflow-y-auto reader-scroll reader-bg transition-all duration-150 ease-out ${readSlide}`}
               >
                 <div className="reader-shell">
                   <MarkdownView content={reading.content} />
                 </div>
               </div>
               <div className="px-4 md:px-6 py-3 border-t bg-card flex items-center justify-between gap-2">
-                <Button variant="outline" size="sm" onClick={() => readGo("prev")} disabled={readIdx <= 0}>
+                <Button variant="outline" size="sm" onClick={() => readGo("prev")} disabled={!hasPrev}>
                   <ChevronLeft className="w-4 h-4 mr-1" /> Prev
                 </Button>
                 <span className="hidden md:inline mono-label">← → or swipe</span>
-                <Button size="sm" onClick={() => readGo("next")} disabled={readIdx >= filtered.length - 1}>
+                <Button size="sm" onClick={() => readGo("next")} disabled={!hasNext}>
                   Next <ChevronRight className="w-4 h-4 ml-1" />
                 </Button>
               </div>
