@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Trash2, Pencil, Star, Search, BookOpen, ChevronLeft, ChevronRight, X, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { MarkdownView } from "@/components/markdown-view";
+import { useReaderNav } from "@/hooks/use-reader-nav";
 
 export const Route = createFileRoute("/_authenticated/questions")({
   head: () => ({ meta: [{ title: "Questions — PrepDesk" }] }),
@@ -42,9 +43,6 @@ function QuestionsPage() {
   const [filterDiff, setFilterDiff] = useState<string>("all");
   const [favOnly, setFavOnly] = useState(false);
   const [viewingId, setViewingId] = useState<string | null>(null);
-  const [swipeDir, setSwipeDir] = useState<"left" | "right" | null>(null);
-  const touchStartX = useRef<number | null>(null);
-  const touchStartY = useRef<number | null>(null);
 
   async function load() {
     setLoading(true);
@@ -87,15 +85,15 @@ function QuestionsPage() {
   return (
     <div className="max-w-6xl mx-auto">
       {/* Header bento */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-6">
-        <div className="panel panel-accent-red md:col-span-2 p-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 md:gap-3 mb-5 md:mb-6">
+        <div className="panel panel-accent-red col-span-2 md:col-span-2 p-5 md:p-6">
           <div className="mono-label mb-2">Questions Bank</div>
-          <h1 className="font-display text-3xl md:text-4xl font-bold tracking-tight">Sharpen every answer.</h1>
-          <p className="text-sm text-muted-foreground mt-2">{items.length} saved · practice, review, master.</p>
+          <h1 className="font-display text-2xl md:text-4xl font-bold tracking-tight leading-tight">Sharpen every answer.</h1>
+          <p className="text-xs md:text-sm text-muted-foreground mt-2">{items.length} saved · practice, review, master.</p>
           <div className="mt-4">
             <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) setEditing(null); }}>
               <DialogTrigger asChild>
-                <Button onClick={() => setEditing(null)}><Plus className="w-4 h-4 mr-1" /> Add question</Button>
+                <Button onClick={() => setEditing(null)} size="sm" className="md:h-10 md:px-4"><Plus className="w-4 h-4 mr-1" /> Add question</Button>
               </DialogTrigger>
               <QuestionDialog editing={editing} onDone={() => { setOpen(false); setEditing(null); load(); }} />
             </Dialog>
@@ -106,29 +104,30 @@ function QuestionsPage() {
       </div>
 
       {/* Filter bar */}
-      <div className="panel p-3 mb-5 sticky top-16 z-20 backdrop-blur bg-card/85">
-        <div className="flex gap-2 items-center flex-wrap">
-          <div className="relative flex-1 min-w-[200px]">
+      <div className="panel p-3 mb-5 md:sticky md:top-16 md:z-20 backdrop-blur bg-card/85">
+        <div className="flex gap-2 items-center">
+          <div className="relative flex-1 min-w-0">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <Input placeholder="Search questions or answers…" className="pl-9 h-10 border-0 bg-muted focus-visible:ring-1" value={search} onChange={(e) => setSearch(e.target.value)} />
+            <Input placeholder="Search…" className="pl-9 h-10 border-0 bg-muted focus-visible:ring-1" value={search} onChange={(e) => setSearch(e.target.value)} />
           </div>
           <Button
-            size="sm"
+            size="icon"
             variant={favOnly ? "default" : "outline"}
             onClick={() => setFavOnly((v) => !v)}
-            className="h-10"
+            className="h-10 w-10 shrink-0"
+            aria-label="Favorites only"
           >
-            <Star className={`w-4 h-4 mr-1 ${favOnly ? "fill-current" : ""}`} /> Favorites
+            <Star className={`w-4 h-4 ${favOnly ? "fill-current" : ""}`} />
           </Button>
         </div>
 
-        <div className="flex gap-2 items-center flex-wrap mt-3">
-          <span className="mono-label mr-1">Difficulty</span>
+        <div className="flex gap-1.5 items-center flex-nowrap mt-3 overflow-x-auto no-scrollbar pb-1">
+          <span className="mono-label mr-1 shrink-0">Diff</span>
           {["all", ...DIFFICULTIES].map((d) => (
             <button
               key={d}
               onClick={() => setFilterDiff(d)}
-              className={`chip transition ${filterDiff === d ? "!bg-foreground !text-background !border-foreground" : "hover:!border-foreground/40"}`}
+              className={`chip shrink-0 transition ${filterDiff === d ? "!bg-foreground !text-background !border-foreground" : "hover:!border-foreground/40"}`}
             >
               {d !== "all" && <span className={`w-1.5 h-1.5 rounded-full ${difficultyDot(d)}`} />}
               {d}
@@ -137,8 +136,8 @@ function QuestionsPage() {
         </div>
 
         {categories.length > 0 && (
-          <div className="flex gap-2 items-center flex-nowrap mt-2 overflow-x-auto pb-1">
-            <span className="mono-label mr-1 shrink-0">Category</span>
+          <div className="flex gap-1.5 items-center flex-nowrap mt-2 overflow-x-auto no-scrollbar pb-1">
+            <span className="mono-label mr-1 shrink-0">Cat</span>
             {["all", ...categories].map((c) => (
               <button
                 key={c}
@@ -159,15 +158,15 @@ function QuestionsPage() {
           <p className="text-muted-foreground">No questions match. Try clearing filters or add a new one.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 md:gap-4">
           {filtered.map((q) => (
             <div
               key={q.id}
               onClick={() => setViewingId(q.id)}
-              className="panel panel-hover p-5 flex flex-col cursor-pointer group"
+              className="panel panel-hover p-4 md:p-5 flex flex-col cursor-pointer group active:scale-[0.99] transition-transform"
             >
               <div className="flex items-start justify-between gap-2 mb-3">
-                <div className="flex items-center gap-2 min-w-0 flex-wrap">
+                <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
                   <span className="chip !bg-muted">{q.category}</span>
                   <span className="chip">
                     <span className={`w-1.5 h-1.5 rounded-full ${difficultyDot(q.difficulty)}`} />
@@ -193,13 +192,13 @@ function QuestionsPage() {
                 </p>
               )}
 
-              <div className="mt-4 pt-3 border-t border-border/60 flex items-center justify-between opacity-70 group-hover:opacity-100 transition">
+              <div className="mt-4 pt-3 border-t border-border/60 flex items-center justify-between opacity-90 group-hover:opacity-100 transition">
                 <span className="mono-label inline-flex items-center gap-1"><BookOpen className="w-3 h-3" /> Read</span>
                 <div className="flex gap-1">
-                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); setEditing(q); setOpen(true); }}>
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); setEditing(q); setOpen(true); }} aria-label="Edit">
                     <Pencil className="w-3.5 h-3.5" />
                   </Button>
-                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); remove(q.id); }}>
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); remove(q.id); }} aria-label="Delete">
                     <Trash2 className="w-3.5 h-3.5 text-destructive" />
                   </Button>
                 </div>
@@ -215,10 +214,6 @@ function QuestionsPage() {
         onClose={() => setViewingId(null)}
         onNavigate={setViewingId}
         onToggleFav={toggleFav}
-        swipeDir={swipeDir}
-        setSwipeDir={setSwipeDir}
-        touchStartX={touchStartX}
-        touchStartY={touchStartY}
       />
     </div>
   );
@@ -238,17 +233,12 @@ function StatTile({ label, value, accent, icon }: { label: string; value: number
 
 function ReaderDialog({
   list, viewingId, onClose, onNavigate, onToggleFav,
-  swipeDir, setSwipeDir, touchStartX, touchStartY,
 }: {
   list: Q[];
   viewingId: string | null;
   onClose: () => void;
   onNavigate: (id: string) => void;
   onToggleFav: (q: Q) => void;
-  swipeDir: "left" | "right" | null;
-  setSwipeDir: (d: "left" | "right" | null) => void;
-  touchStartX: React.MutableRefObject<number | null>;
-  touchStartY: React.MutableRefObject<number | null>;
 }) {
   const [reviewed, setReviewed] = useState<Set<string>>(new Set());
   const idx = list.findIndex((q) => q.id === viewingId);
@@ -257,26 +247,13 @@ function ReaderDialog({
   const hasNext = idx >= 0 && idx < list.length - 1;
   const progress = list.length ? ((idx + 1) / list.length) * 100 : 0;
 
-  function go(dir: "next" | "prev") {
-    if (dir === "next" && hasNext) {
-      setSwipeDir("left");
-      setTimeout(() => { onNavigate(list[idx + 1].id); setSwipeDir(null); }, 160);
-    } else if (dir === "prev" && hasPrev) {
-      setSwipeDir("right");
-      setTimeout(() => { onNavigate(list[idx - 1].id); setSwipeDir(null); }, 160);
-    }
-  }
-
-  useEffect(() => {
-    if (!viewing) return;
-    function onKey(e: KeyboardEvent) {
-      if (e.key === "ArrowRight") go("next");
-      else if (e.key === "ArrowLeft") go("prev");
-    }
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [viewing?.id, hasNext, hasPrev]);
+  const { go, touchHandlers, slideClass } = useReaderNav({
+    enabled: !!viewing,
+    hasPrev, hasNext,
+    onPrev: () => hasPrev && onNavigate(list[idx - 1].id),
+    onNext: () => hasNext && onNavigate(list[idx + 1].id),
+    deps: [idx, list.length],
+  });
 
   function toggleReviewed() {
     if (!viewing) return;
@@ -289,24 +266,11 @@ function ReaderDialog({
 
   return (
     <Dialog open={!!viewing} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-w-4xl w-[96vw] max-h-[92vh] overflow-hidden p-0 gap-0 border-2">
+      <DialogContent className="max-w-4xl w-[100vw] sm:w-[96vw] h-[100dvh] sm:h-auto sm:max-h-[92vh] overflow-hidden p-0 gap-0 sm:border-2 rounded-none sm:rounded-lg">
         {viewing && (
           <div
-            className="flex flex-col max-h-[92vh]"
-            onTouchStart={(e) => {
-              touchStartX.current = e.touches[0].clientX;
-              touchStartY.current = e.touches[0].clientY;
-            }}
-            onTouchEnd={(e) => {
-              if (touchStartX.current == null || touchStartY.current == null) return;
-              const dx = e.changedTouches[0].clientX - touchStartX.current;
-              const dy = e.changedTouches[0].clientY - touchStartY.current;
-              if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy)) {
-                if (dx < 0) go("next"); else go("prev");
-              }
-              touchStartX.current = null;
-              touchStartY.current = null;
-            }}
+            className="flex flex-col h-[100dvh] sm:h-auto sm:max-h-[92vh]"
+            {...touchHandlers}
           >
             {/* Progress bar */}
             <div className="h-1 bg-muted relative">
@@ -314,21 +278,24 @@ function ReaderDialog({
             </div>
 
             {/* Header */}
-            <div className="px-6 md:px-10 pt-6 pb-5 border-b bg-card">
-              <div className="flex items-center justify-between mb-3">
+            <div className="px-4 md:px-10 pt-4 md:pt-6 pb-4 md:pb-5 border-b bg-card">
+              <div className="flex items-center justify-between mb-2 md:mb-3">
                 <div className="mono-label">
-                  Question <span className="text-foreground">{String(idx + 1).padStart(2, "0")}</span> / {String(list.length).padStart(2, "0")}
+                  <span className="text-foreground">{String(idx + 1).padStart(2, "0")}</span> / {String(list.length).padStart(2, "0")}
                 </div>
                 <div className="flex items-center gap-1">
-                  <Button variant="ghost" size="icon" onClick={() => onToggleFav(viewing)} className="h-8 w-8" aria-label="Favorite">
+                  <Button variant="ghost" size="icon" onClick={toggleReviewed} className="h-9 w-9 sm:hidden" aria-label="Mark reviewed">
+                    <CheckCircle2 className={`w-4 h-4 ${reviewed.has(viewing.id) ? "text-brand-blue" : ""}`} />
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={() => onToggleFav(viewing)} className="h-9 w-9" aria-label="Favorite">
                     <Star className={`w-4 h-4 ${viewing.is_favorite ? "fill-amber-400 text-amber-400" : ""}`} />
                   </Button>
-                  <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8" aria-label="Close">
+                  <Button variant="ghost" size="icon" onClick={onClose} className="h-9 w-9" aria-label="Close">
                     <X className="w-4 h-4" />
                   </Button>
                 </div>
               </div>
-              <div className="flex items-center gap-2 flex-wrap mb-3">
+              <div className="flex items-center gap-1.5 flex-wrap mb-3">
                 <span className="chip !bg-muted">{viewing.category}</span>
                 <span className="chip">
                   <span className={`w-1.5 h-1.5 rounded-full ${difficultyDot(viewing.difficulty)}`} />
@@ -341,7 +308,7 @@ function ReaderDialog({
                 )}
               </div>
               <DialogHeader>
-                <DialogTitle className="font-display text-2xl md:text-3xl leading-tight tracking-tight">
+                <DialogTitle className="font-display text-xl md:text-3xl leading-tight tracking-tight">
                   {viewing.question}
                 </DialogTitle>
               </DialogHeader>
@@ -350,10 +317,7 @@ function ReaderDialog({
             {/* Body */}
             <div
               key={viewing.id}
-              className={`flex-1 overflow-y-auto reader-scroll reader-bg transition-all duration-150 ease-out ${
-                swipeDir === "left" ? "-translate-x-6 opacity-0" :
-                swipeDir === "right" ? "translate-x-6 opacity-0" : "translate-x-0 opacity-100"
-              }`}
+              className={`flex-1 overflow-y-auto reader-scroll reader-bg transition-all duration-150 ease-out ${slideClass}`}
             >
               <div className="reader-shell">
                 <div className="flex items-center gap-3 mb-6">

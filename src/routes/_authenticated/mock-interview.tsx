@@ -109,54 +109,75 @@ function MockInterviewPage() {
   return (
     <div className="max-w-6xl mx-auto">
       {/* Header bento */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-        <div className="panel panel-accent-red md:col-span-2 col-span-2 p-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 md:gap-3 mb-5 md:mb-6">
+        <div className="panel panel-accent-red col-span-2 md:col-span-2 p-5 md:p-6">
           <div className="mono-label mb-2 inline-flex items-center gap-1"><Sparkles className="w-3 h-3" /> AI Interviewer</div>
-          <h1 className="font-display text-3xl md:text-4xl font-bold tracking-tight">Mock Interview.</h1>
-          <p className="text-sm text-muted-foreground mt-2">Live grilling on any topic. No judgment — just reps.</p>
-          <div className="mt-4"><Button onClick={() => setShowNew(true)}><Plus className="w-4 h-4 mr-1" /> New session</Button></div>
+          <h1 className="font-display text-2xl md:text-4xl font-bold tracking-tight leading-tight">Mock Interview.</h1>
+          <p className="text-xs md:text-sm text-muted-foreground mt-2">Live grilling on any topic. No judgment — just reps.</p>
+          <div className="mt-4"><Button size="sm" className="md:h-10 md:px-4" onClick={() => setShowNew(true)}><Plus className="w-4 h-4 mr-1" /> New session</Button></div>
         </div>
-        <div className="panel panel-accent-blue p-5 flex flex-col justify-between">
+        <div className="panel panel-accent-blue p-4 md:p-5 flex flex-col justify-between">
           <span className="mono-label">Sessions</span>
           <div className="stat-num mt-3">{sessions.length}</div>
         </div>
-        <div className="panel p-5 flex flex-col justify-between">
+        <div className="panel p-4 md:p-5 flex flex-col justify-between">
           <span className="mono-label">Messages</span>
           <div className="stat-num mt-3">{messages.length}</div>
         </div>
       </div>
 
       {showNew && (
-        <div className="panel p-4 mb-6 flex gap-2 items-center">
-          <Input autoFocus placeholder="What topic? e.g. React, System Design, Python…" value={newTopic} onChange={(e) => setNewTopic(e.target.value)} onKeyDown={(e) => e.key === "Enter" && startSession()} />
-          <Button onClick={startSession} disabled={sending}>{sending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Start"}</Button>
-          <Button variant="ghost" onClick={() => setShowNew(false)}>Cancel</Button>
+        <div className="panel p-3 md:p-4 mb-5 md:mb-6 flex flex-col sm:flex-row gap-2 sm:items-center">
+          <Input autoFocus placeholder="What topic? e.g. React, System Design…" value={newTopic} onChange={(e) => setNewTopic(e.target.value)} onKeyDown={(e) => e.key === "Enter" && startSession()} />
+          <div className="flex gap-2">
+            <Button className="flex-1 sm:flex-none" onClick={startSession} disabled={sending}>{sending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Start"}</Button>
+            <Button variant="ghost" onClick={() => setShowNew(false)}>Cancel</Button>
+          </div>
+        </div>
+      )}
+
+      {/* Sessions strip — mobile only */}
+      {sessions.length > 0 && (
+        <div className="lg:hidden mb-4 -mx-1 px-1 flex gap-2 overflow-x-auto no-scrollbar pb-1">
+          {sessions.map((s) => (
+            <button
+              key={s.id}
+              onClick={() => setActive(s)}
+              className={`chip shrink-0 !py-2 !px-3 transition ${active?.id === s.id ? "!bg-foreground !text-background !border-foreground" : ""}`}
+            >
+              <MessageSquare className="w-3 h-3" />
+              <span className="truncate max-w-[140px]">{s.title}</span>
+            </button>
+          ))}
         </div>
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-4">
         {/* Chat panel */}
         {active ? (
-          <div className="panel flex flex-col h-[72vh] overflow-hidden">
-            <div className="px-5 py-4 border-b bg-card flex items-center justify-between gap-3">
-              <div className="min-w-0">
+          <div className="panel flex flex-col h-[calc(100dvh-14rem)] min-h-[500px] lg:h-[72vh] overflow-hidden">
+            <div className="px-4 md:px-5 py-3 md:py-4 border-b bg-card flex items-center justify-between gap-3">
+              <div className="min-w-0 flex-1">
                 <div className="mono-label">Session</div>
-                <h3 className="font-display font-bold text-lg truncate">{active.title}</h3>
+                <h3 className="font-display font-bold text-base md:text-lg truncate">{active.title}</h3>
               </div>
               {active.topic && <span className="chip !bg-muted shrink-0">{active.topic}</span>}
+              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 lg:hidden" onClick={() => deleteSession(active.id)} aria-label="Delete session">
+                <Trash2 className="w-4 h-4 text-destructive" />
+              </Button>
             </div>
-            <div ref={scrollRef} className="flex-1 overflow-y-auto reader-scroll p-5 space-y-4 bg-muted/30">
+            <div ref={scrollRef} className="flex-1 overflow-y-auto reader-scroll p-4 md:p-5 space-y-3 md:space-y-4 bg-muted/30">
               {messages.length === 0 && !sending && (
                 <p className="text-center text-muted-foreground text-sm py-10">Waiting for first question…</p>
               )}
               {messages.map((m) => {
                 const isUser = m.role === "user";
                 return (
-                  <div key={m.id} className={`flex gap-2.5 ${isUser ? "flex-row-reverse" : "flex-row"}`}>
-                    <div className={`shrink-0 w-8 h-8 rounded-full grid place-items-center ${isUser ? "bg-primary text-primary-foreground" : "bg-foreground text-background"}`}>
-                      {isUser ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
+                  <div key={m.id} className={`flex gap-2 md:gap-2.5 ${isUser ? "flex-row-reverse" : "flex-row"}`}>
+                    <div className={`shrink-0 w-7 h-7 md:w-8 md:h-8 rounded-full grid place-items-center ${isUser ? "bg-primary text-primary-foreground" : "bg-foreground text-background"}`}>
+                      {isUser ? <User className="w-3.5 h-3.5" /> : <Bot className="w-3.5 h-3.5" />}
                     </div>
-                    <div className={`max-w-[78%] rounded-2xl px-4 py-2.5 shadow-sm ${isUser ? "bg-primary text-primary-foreground rounded-tr-sm" : "bg-card border border-border rounded-tl-sm"}`}>
+                    <div className={`max-w-[82%] md:max-w-[78%] rounded-2xl px-3.5 md:px-4 py-2.5 shadow-sm ${isUser ? "bg-primary text-primary-foreground rounded-tr-sm" : "bg-card border border-border rounded-tl-sm"}`}>
                       <div className={`text-[10px] uppercase tracking-widest mb-1 opacity-70 ${isUser ? "" : "text-brand-red"}`}>
                         {isUser ? "You" : "Interviewer"}
                       </div>
@@ -178,35 +199,35 @@ function MockInterviewPage() {
                 </div>
               )}
             </div>
-            <div className="p-3 border-t bg-card flex gap-2">
+            <div className="p-2.5 md:p-3 border-t bg-card flex gap-2">
               <Textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
-                placeholder="Type your answer… (Enter to send, Shift+Enter for newline)"
+                placeholder="Type your answer… (Enter to send)"
                 rows={2}
-                className="resize-none"
+                className="resize-none min-h-[52px]"
               />
-              <Button onClick={send} disabled={sending || !input.trim()} size="lg" className="h-auto">
+              <Button onClick={send} disabled={sending || !input.trim()} size="lg" className="h-auto shrink-0">
                 <Send className="w-4 h-4" />
               </Button>
             </div>
           </div>
         ) : (
-          <div className="panel panel-accent-red p-10 text-center flex flex-col items-center gap-4 min-h-[60vh] justify-center">
+          <div className="panel panel-accent-red p-8 md:p-10 text-center flex flex-col items-center gap-4 min-h-[50vh] md:min-h-[60vh] justify-center">
             <div className="w-14 h-14 rounded-2xl bg-foreground text-background grid place-items-center">
               <MessageSquare className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="font-display text-2xl font-bold">Start a mock interview</h3>
+              <h3 className="font-display text-xl md:text-2xl font-bold">Start a mock interview</h3>
               <p className="text-sm text-muted-foreground mt-1 max-w-sm">Pick any topic and get grilled with realistic follow-ups.</p>
             </div>
             <Button onClick={() => setShowNew(true)}><Plus className="w-4 h-4 mr-1" /> New session</Button>
           </div>
         )}
 
-        {/* Side rail */}
-        <div className="flex flex-col gap-3">
+        {/* Side rail — desktop only */}
+        <div className="hidden lg:flex flex-col gap-3">
           <div className="panel p-4">
             <div className="mono-label mb-3 flex items-center gap-1"><Zap className="w-3 h-3 text-brand-red" /> Sessions</div>
             <div className="space-y-1 max-h-[36vh] overflow-y-auto reader-scroll">

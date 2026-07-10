@@ -73,14 +73,14 @@ function ProgressPage() {
   return (
     <div className="max-w-6xl mx-auto">
       {/* Header bento */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-        <div className="panel panel-accent-blue md:col-span-2 col-span-2 p-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 md:gap-3 mb-5 md:mb-6">
+        <div className="panel panel-accent-blue md:col-span-2 col-span-2 p-5 md:p-6">
           <div className="mono-label mb-2 inline-flex items-center gap-1"><TrendingUp className="w-3 h-3" /> Progress</div>
-          <h1 className="font-display text-3xl md:text-4xl font-bold tracking-tight">Confidence, tracked.</h1>
-          <p className="text-sm text-muted-foreground mt-2">Rate each topic 1–5. Review often. Watch it climb.</p>
+          <h1 className="font-display text-2xl md:text-4xl font-bold tracking-tight leading-tight">Confidence, tracked.</h1>
+          <p className="text-xs md:text-sm text-muted-foreground mt-2">Rate each topic 1–5. Review often. Watch it climb.</p>
           <div className="mt-4">
             <Dialog open={open} onOpenChange={setOpen}>
-              <DialogTrigger asChild><Button><Plus className="w-4 h-4 mr-1" /> Add topic</Button></DialogTrigger>
+              <DialogTrigger asChild><Button size="sm" className="md:h-10 md:px-4"><Plus className="w-4 h-4 mr-1" /> Add topic</Button></DialogTrigger>
               <DialogContent>
                 <DialogHeader><DialogTitle>Add a topic to track</DialogTitle></DialogHeader>
                 <div className="space-y-4">
