@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Trash2, Pencil, Star, Search, BookOpen, ChevronLeft, ChevronRight, X, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { MarkdownView } from "@/components/markdown-view";
+import { useReaderNav } from "@/hooks/use-reader-nav";
 
 export const Route = createFileRoute("/_authenticated/questions")({
   head: () => ({ meta: [{ title: "Questions — PrepDesk" }] }),
