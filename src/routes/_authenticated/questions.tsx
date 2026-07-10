@@ -85,15 +85,15 @@ function QuestionsPage() {
   return (
     <div className="max-w-6xl mx-auto">
       {/* Header bento */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-6">
-        <div className="panel panel-accent-red md:col-span-2 p-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 md:gap-3 mb-5 md:mb-6">
+        <div className="panel panel-accent-red col-span-2 md:col-span-2 p-5 md:p-6">
           <div className="mono-label mb-2">Questions Bank</div>
-          <h1 className="font-display text-3xl md:text-4xl font-bold tracking-tight">Sharpen every answer.</h1>
-          <p className="text-sm text-muted-foreground mt-2">{items.length} saved · practice, review, master.</p>
+          <h1 className="font-display text-2xl md:text-4xl font-bold tracking-tight leading-tight">Sharpen every answer.</h1>
+          <p className="text-xs md:text-sm text-muted-foreground mt-2">{items.length} saved · practice, review, master.</p>
           <div className="mt-4">
             <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) setEditing(null); }}>
               <DialogTrigger asChild>
-                <Button onClick={() => setEditing(null)}><Plus className="w-4 h-4 mr-1" /> Add question</Button>
+                <Button onClick={() => setEditing(null)} size="sm" className="md:h-10 md:px-4"><Plus className="w-4 h-4 mr-1" /> Add question</Button>
               </DialogTrigger>
               <QuestionDialog editing={editing} onDone={() => { setOpen(false); setEditing(null); load(); }} />
             </Dialog>
@@ -104,29 +104,30 @@ function QuestionsPage() {
       </div>
 
       {/* Filter bar */}
-      <div className="panel p-3 mb-5 sticky top-16 z-20 backdrop-blur bg-card/85">
-        <div className="flex gap-2 items-center flex-wrap">
-          <div className="relative flex-1 min-w-[200px]">
+      <div className="panel p-3 mb-5 md:sticky md:top-16 md:z-20 backdrop-blur bg-card/85">
+        <div className="flex gap-2 items-center">
+          <div className="relative flex-1 min-w-0">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <Input placeholder="Search questions or answers…" className="pl-9 h-10 border-0 bg-muted focus-visible:ring-1" value={search} onChange={(e) => setSearch(e.target.value)} />
+            <Input placeholder="Search…" className="pl-9 h-10 border-0 bg-muted focus-visible:ring-1" value={search} onChange={(e) => setSearch(e.target.value)} />
           </div>
           <Button
-            size="sm"
+            size="icon"
             variant={favOnly ? "default" : "outline"}
             onClick={() => setFavOnly((v) => !v)}
-            className="h-10"
+            className="h-10 w-10 shrink-0"
+            aria-label="Favorites only"
           >
-            <Star className={`w-4 h-4 mr-1 ${favOnly ? "fill-current" : ""}`} /> Favorites
+            <Star className={`w-4 h-4 ${favOnly ? "fill-current" : ""}`} />
           </Button>
         </div>
 
-        <div className="flex gap-2 items-center flex-wrap mt-3">
-          <span className="mono-label mr-1">Difficulty</span>
+        <div className="flex gap-1.5 items-center flex-nowrap mt-3 overflow-x-auto no-scrollbar pb-1">
+          <span className="mono-label mr-1 shrink-0">Diff</span>
           {["all", ...DIFFICULTIES].map((d) => (
             <button
               key={d}
               onClick={() => setFilterDiff(d)}
-              className={`chip transition ${filterDiff === d ? "!bg-foreground !text-background !border-foreground" : "hover:!border-foreground/40"}`}
+              className={`chip shrink-0 transition ${filterDiff === d ? "!bg-foreground !text-background !border-foreground" : "hover:!border-foreground/40"}`}
             >
               {d !== "all" && <span className={`w-1.5 h-1.5 rounded-full ${difficultyDot(d)}`} />}
               {d}
@@ -135,8 +136,8 @@ function QuestionsPage() {
         </div>
 
         {categories.length > 0 && (
-          <div className="flex gap-2 items-center flex-nowrap mt-2 overflow-x-auto pb-1">
-            <span className="mono-label mr-1 shrink-0">Category</span>
+          <div className="flex gap-1.5 items-center flex-nowrap mt-2 overflow-x-auto no-scrollbar pb-1">
+            <span className="mono-label mr-1 shrink-0">Cat</span>
             {["all", ...categories].map((c) => (
               <button
                 key={c}
@@ -157,15 +158,15 @@ function QuestionsPage() {
           <p className="text-muted-foreground">No questions match. Try clearing filters or add a new one.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 md:gap-4">
           {filtered.map((q) => (
             <div
               key={q.id}
               onClick={() => setViewingId(q.id)}
-              className="panel panel-hover p-5 flex flex-col cursor-pointer group"
+              className="panel panel-hover p-4 md:p-5 flex flex-col cursor-pointer group active:scale-[0.99] transition-transform"
             >
               <div className="flex items-start justify-between gap-2 mb-3">
-                <div className="flex items-center gap-2 min-w-0 flex-wrap">
+                <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
                   <span className="chip !bg-muted">{q.category}</span>
                   <span className="chip">
                     <span className={`w-1.5 h-1.5 rounded-full ${difficultyDot(q.difficulty)}`} />
@@ -191,13 +192,13 @@ function QuestionsPage() {
                 </p>
               )}
 
-              <div className="mt-4 pt-3 border-t border-border/60 flex items-center justify-between opacity-70 group-hover:opacity-100 transition">
+              <div className="mt-4 pt-3 border-t border-border/60 flex items-center justify-between opacity-90 group-hover:opacity-100 transition">
                 <span className="mono-label inline-flex items-center gap-1"><BookOpen className="w-3 h-3" /> Read</span>
                 <div className="flex gap-1">
-                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); setEditing(q); setOpen(true); }}>
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); setEditing(q); setOpen(true); }} aria-label="Edit">
                     <Pencil className="w-3.5 h-3.5" />
                   </Button>
-                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); remove(q.id); }}>
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); remove(q.id); }} aria-label="Delete">
                     <Trash2 className="w-3.5 h-3.5 text-destructive" />
                   </Button>
                 </div>
@@ -213,10 +214,6 @@ function QuestionsPage() {
         onClose={() => setViewingId(null)}
         onNavigate={setViewingId}
         onToggleFav={toggleFav}
-        swipeDir={swipeDir}
-        setSwipeDir={setSwipeDir}
-        touchStartX={touchStartX}
-        touchStartY={touchStartY}
       />
     </div>
   );
