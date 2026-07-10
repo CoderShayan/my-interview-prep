@@ -93,25 +93,15 @@ function NotesPage() {
   // Reader navigation
   const readIdx = filtered.findIndex((n) => n.id === readingId);
   const reading = readIdx >= 0 ? filtered[readIdx] : null;
-  function readGo(dir: "next" | "prev") {
-    if (dir === "next" && readIdx < filtered.length - 1) {
-      setSwipeDir("left");
-      setTimeout(() => { setReadingId(filtered[readIdx + 1].id); setSwipeDir(null); }, 160);
-    } else if (dir === "prev" && readIdx > 0) {
-      setSwipeDir("right");
-      setTimeout(() => { setReadingId(filtered[readIdx - 1].id); setSwipeDir(null); }, 160);
-    }
-  }
-  useEffect(() => {
-    if (!reading) return;
-    function onKey(e: KeyboardEvent) {
-      if (e.key === "ArrowRight") readGo("next");
-      else if (e.key === "ArrowLeft") readGo("prev");
-    }
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [reading?.id, readIdx, filtered.length]);
+  const hasPrev = readIdx > 0;
+  const hasNext = readIdx >= 0 && readIdx < filtered.length - 1;
+  const { go: readGo, touchHandlers: readTouch, slideClass: readSlide } = useReaderNav({
+    enabled: !!reading,
+    hasPrev, hasNext,
+    onPrev: () => hasPrev && setReadingId(filtered[readIdx - 1].id),
+    onNext: () => hasNext && setReadingId(filtered[readIdx + 1].id),
+    deps: [readIdx, filtered.length],
+  });
 
   return (
     <>
