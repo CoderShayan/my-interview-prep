@@ -278,21 +278,24 @@ function ReaderDialog({
             </div>
 
             {/* Header */}
-            <div className="px-6 md:px-10 pt-6 pb-5 border-b bg-card">
-              <div className="flex items-center justify-between mb-3">
+            <div className="px-4 md:px-10 pt-4 md:pt-6 pb-4 md:pb-5 border-b bg-card">
+              <div className="flex items-center justify-between mb-2 md:mb-3">
                 <div className="mono-label">
-                  Question <span className="text-foreground">{String(idx + 1).padStart(2, "0")}</span> / {String(list.length).padStart(2, "0")}
+                  <span className="text-foreground">{String(idx + 1).padStart(2, "0")}</span> / {String(list.length).padStart(2, "0")}
                 </div>
                 <div className="flex items-center gap-1">
-                  <Button variant="ghost" size="icon" onClick={() => onToggleFav(viewing)} className="h-8 w-8" aria-label="Favorite">
+                  <Button variant="ghost" size="icon" onClick={toggleReviewed} className="h-9 w-9 sm:hidden" aria-label="Mark reviewed">
+                    <CheckCircle2 className={`w-4 h-4 ${reviewed.has(viewing.id) ? "text-brand-blue" : ""}`} />
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={() => onToggleFav(viewing)} className="h-9 w-9" aria-label="Favorite">
                     <Star className={`w-4 h-4 ${viewing.is_favorite ? "fill-amber-400 text-amber-400" : ""}`} />
                   </Button>
-                  <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8" aria-label="Close">
+                  <Button variant="ghost" size="icon" onClick={onClose} className="h-9 w-9" aria-label="Close">
                     <X className="w-4 h-4" />
                   </Button>
                 </div>
               </div>
-              <div className="flex items-center gap-2 flex-wrap mb-3">
+              <div className="flex items-center gap-1.5 flex-wrap mb-3">
                 <span className="chip !bg-muted">{viewing.category}</span>
                 <span className="chip">
                   <span className={`w-1.5 h-1.5 rounded-full ${difficultyDot(viewing.difficulty)}`} />
@@ -305,7 +308,7 @@ function ReaderDialog({
                 )}
               </div>
               <DialogHeader>
-                <DialogTitle className="font-display text-2xl md:text-3xl leading-tight tracking-tight">
+                <DialogTitle className="font-display text-xl md:text-3xl leading-tight tracking-tight">
                   {viewing.question}
                 </DialogTitle>
               </DialogHeader>
@@ -314,10 +317,7 @@ function ReaderDialog({
             {/* Body */}
             <div
               key={viewing.id}
-              className={`flex-1 overflow-y-auto reader-scroll reader-bg transition-all duration-150 ease-out ${
-                swipeDir === "left" ? "-translate-x-6 opacity-0" :
-                swipeDir === "right" ? "translate-x-6 opacity-0" : "translate-x-0 opacity-100"
-              }`}
+              className={`flex-1 overflow-y-auto reader-scroll reader-bg transition-all duration-150 ease-out ${slideClass}`}
             >
               <div className="reader-shell">
                 <div className="flex items-center gap-3 mb-6">
