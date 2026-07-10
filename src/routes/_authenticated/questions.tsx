@@ -233,17 +233,12 @@ function StatTile({ label, value, accent, icon }: { label: string; value: number
 
 function ReaderDialog({
   list, viewingId, onClose, onNavigate, onToggleFav,
-  swipeDir, setSwipeDir, touchStartX, touchStartY,
 }: {
   list: Q[];
   viewingId: string | null;
   onClose: () => void;
   onNavigate: (id: string) => void;
   onToggleFav: (q: Q) => void;
-  swipeDir: "left" | "right" | null;
-  setSwipeDir: (d: "left" | "right" | null) => void;
-  touchStartX: React.MutableRefObject<number | null>;
-  touchStartY: React.MutableRefObject<number | null>;
 }) {
   const [reviewed, setReviewed] = useState<Set<string>>(new Set());
   const idx = list.findIndex((q) => q.id === viewingId);
@@ -252,26 +247,13 @@ function ReaderDialog({
   const hasNext = idx >= 0 && idx < list.length - 1;
   const progress = list.length ? ((idx + 1) / list.length) * 100 : 0;
 
-  function go(dir: "next" | "prev") {
-    if (dir === "next" && hasNext) {
-      setSwipeDir("left");
-      setTimeout(() => { onNavigate(list[idx + 1].id); setSwipeDir(null); }, 160);
-    } else if (dir === "prev" && hasPrev) {
-      setSwipeDir("right");
-      setTimeout(() => { onNavigate(list[idx - 1].id); setSwipeDir(null); }, 160);
-    }
-  }
-
-  useEffect(() => {
-    if (!viewing) return;
-    function onKey(e: KeyboardEvent) {
-      if (e.key === "ArrowRight") go("next");
-      else if (e.key === "ArrowLeft") go("prev");
-    }
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [viewing?.id, hasNext, hasPrev]);
+  const { go, touchHandlers, slideClass } = useReaderNav({
+    enabled: !!viewing,
+    hasPrev, hasNext,
+    onPrev: () => hasPrev && onNavigate(list[idx - 1].id),
+    onNext: () => hasNext && onNavigate(list[idx + 1].id),
+    deps: [idx, list.length],
+  });
 
   function toggleReviewed() {
     if (!viewing) return;
@@ -284,24 +266,11 @@ function ReaderDialog({
 
   return (
     <Dialog open={!!viewing} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-w-4xl w-[96vw] max-h-[92vh] overflow-hidden p-0 gap-0 border-2">
+      <DialogContent className="max-w-4xl w-[100vw] sm:w-[96vw] h-[100dvh] sm:h-auto sm:max-h-[92vh] overflow-hidden p-0 gap-0 sm:border-2 rounded-none sm:rounded-lg">
         {viewing && (
           <div
-            className="flex flex-col max-h-[92vh]"
-            onTouchStart={(e) => {
-              touchStartX.current = e.touches[0].clientX;
-              touchStartY.current = e.touches[0].clientY;
-            }}
-            onTouchEnd={(e) => {
-              if (touchStartX.current == null || touchStartY.current == null) return;
-              const dx = e.changedTouches[0].clientX - touchStartX.current;
-              const dy = e.changedTouches[0].clientY - touchStartY.current;
-              if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy)) {
-                if (dx < 0) go("next"); else go("prev");
-              }
-              touchStartX.current = null;
-              touchStartY.current = null;
-            }}
+            className="flex flex-col h-[100dvh] sm:h-auto sm:max-h-[92vh]"
+            {...touchHandlers}
           >
             {/* Progress bar */}
             <div className="h-1 bg-muted relative">
