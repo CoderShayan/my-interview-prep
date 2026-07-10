@@ -30,9 +30,6 @@ function NotesPage() {
   const [topic, setTopic] = useState("");
   const [saving, setSaving] = useState(false);
 
-  const touchStartX = useRef<number | null>(null);
-  const touchStartY = useRef<number | null>(null);
-  const [swipeDir, setSwipeDir] = useState<"left" | "right" | null>(null);
 
   async function load() {
     const { data } = await (supabase as any).from("notes").select("*").order("updated_at", { ascending: false });
