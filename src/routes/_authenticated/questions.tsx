@@ -266,44 +266,72 @@ function ReaderDialog({
 
   return (
     <Dialog open={!!viewing} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-w-4xl w-[100vw] sm:w-[96vw] h-[100dvh] sm:h-auto sm:max-h-[92vh] overflow-hidden p-0 gap-0 sm:border-2 rounded-none sm:rounded-lg">
+      <DialogContent
+        className="max-w-4xl w-[100vw] sm:w-[96vw] h-[100dvh] sm:h-auto sm:max-h-[92vh] overflow-hidden p-0 gap-0 sm:border-2 rounded-none sm:rounded-lg"
+        aria-label="Question reader"
+      >
         {viewing && (
           <div
             className="flex flex-col h-[100dvh] sm:h-auto sm:max-h-[92vh]"
             {...touchHandlers}
+            role="region"
+            aria-roledescription="carousel"
+            aria-label={`Question ${idx + 1} of ${list.length}`}
           >
             {/* Progress bar */}
-            <div className="h-1 bg-muted relative">
+            <div
+              className="h-1 bg-muted relative"
+              role="progressbar"
+              aria-label="Reading progress"
+              aria-valuemin={0}
+              aria-valuemax={list.length}
+              aria-valuenow={idx + 1}
+              aria-valuetext={`Question ${idx + 1} of ${list.length}`}
+            >
               <div className="absolute inset-y-0 left-0 bg-brand-red transition-all duration-300" style={{ width: `${progress}%` }} />
             </div>
 
             {/* Header */}
             <div className="px-4 md:px-10 pt-4 md:pt-6 pb-4 md:pb-5 border-b bg-card">
               <div className="flex items-center justify-between mb-2 md:mb-3">
-                <div className="mono-label">
-                  <span className="text-foreground">{String(idx + 1).padStart(2, "0")}</span> / {String(list.length).padStart(2, "0")}
+                <div className="mono-label" aria-live="polite" aria-atomic="true">
+                  <span className="sr-only">Question </span>
+                  <span className="text-foreground">{String(idx + 1).padStart(2, "0")}</span>
+                  <span aria-hidden="true"> / </span>
+                  <span className="sr-only">of </span>
+                  {String(list.length).padStart(2, "0")}
                 </div>
                 <div className="flex items-center gap-1">
-                  <Button variant="ghost" size="icon" onClick={toggleReviewed} className="h-9 w-9 sm:hidden" aria-label="Mark reviewed">
-                    <CheckCircle2 className={`w-4 h-4 ${reviewed.has(viewing.id) ? "text-brand-blue" : ""}`} />
+                  <Button
+                    variant="ghost" size="icon" onClick={toggleReviewed}
+                    className="h-9 w-9 sm:hidden"
+                    aria-label={reviewed.has(viewing.id) ? "Unmark as reviewed" : "Mark as reviewed"}
+                    aria-pressed={reviewed.has(viewing.id)}
+                  >
+                    <CheckCircle2 className={`w-4 h-4 ${reviewed.has(viewing.id) ? "text-brand-blue" : ""}`} aria-hidden="true" />
                   </Button>
-                  <Button variant="ghost" size="icon" onClick={() => onToggleFav(viewing)} className="h-9 w-9" aria-label="Favorite">
-                    <Star className={`w-4 h-4 ${viewing.is_favorite ? "fill-amber-400 text-amber-400" : ""}`} />
+                  <Button
+                    variant="ghost" size="icon" onClick={() => onToggleFav(viewing)}
+                    className="h-9 w-9"
+                    aria-label={viewing.is_favorite ? "Remove from favorites" : "Add to favorites"}
+                    aria-pressed={viewing.is_favorite}
+                  >
+                    <Star className={`w-4 h-4 ${viewing.is_favorite ? "fill-amber-400 text-amber-400" : ""}`} aria-hidden="true" />
                   </Button>
-                  <Button variant="ghost" size="icon" onClick={onClose} className="h-9 w-9" aria-label="Close">
-                    <X className="w-4 h-4" />
+                  <Button variant="ghost" size="icon" onClick={onClose} className="h-9 w-9" aria-label="Close reader">
+                    <X className="w-4 h-4" aria-hidden="true" />
                   </Button>
                 </div>
               </div>
               <div className="flex items-center gap-1.5 flex-wrap mb-3">
-                <span className="chip !bg-muted">{viewing.category}</span>
+                <span className="chip !bg-muted"><span className="sr-only">Category: </span>{viewing.category}</span>
                 <span className="chip">
-                  <span className={`w-1.5 h-1.5 rounded-full ${difficultyDot(viewing.difficulty)}`} />
-                  {viewing.difficulty}
+                  <span className={`w-1.5 h-1.5 rounded-full ${difficultyDot(viewing.difficulty)}`} aria-hidden="true" />
+                  <span className="sr-only">Difficulty: </span>{viewing.difficulty}
                 </span>
                 {reviewed.has(viewing.id) && (
                   <span className="chip !border-brand-blue text-brand-blue">
-                    <CheckCircle2 className="w-3 h-3" /> Reviewed
+                    <CheckCircle2 className="w-3 h-3" aria-hidden="true" /> Reviewed
                   </span>
                 )}
               </div>
@@ -311,28 +339,37 @@ function ReaderDialog({
                 <DialogTitle className="font-display text-xl md:text-3xl leading-tight tracking-tight">
                   {viewing.question}
                 </DialogTitle>
+                <DialogDescription className="sr-only">
+                  Question {idx + 1} of {list.length}. Category {viewing.category}, difficulty {viewing.difficulty}. Use left and right arrow keys or swipe to navigate.
+                </DialogDescription>
               </DialogHeader>
             </div>
 
             {/* Body */}
-            <div
+            <article
               key={viewing.id}
               className={`flex-1 overflow-y-auto reader-scroll reader-bg transition-all duration-150 ease-out ${slideClass}`}
+              aria-label={`Answer to: ${viewing.question}`}
+              tabIndex={0}
             >
               <div className="reader-shell">
-                <div className="flex items-center gap-3 mb-6">
+                <div className="flex items-center gap-3 mb-6" aria-hidden="true">
                   <span className="h-px flex-1 bg-border" />
                   <span className="mono-label !text-brand-red">Answer</span>
                   <span className="h-px flex-1 bg-border" />
                 </div>
+                <h2 className="sr-only">Answer</h2>
                 <MarkdownView content={viewing.answer ?? ""} />
               </div>
-            </div>
+            </article>
 
             {/* Footer nav */}
             <div className="px-4 md:px-6 py-3 border-t bg-card flex items-center justify-between gap-2">
-              <Button variant="outline" size="sm" onClick={() => go("prev")} disabled={!hasPrev}>
-                <ChevronLeft className="w-4 h-4 mr-1" /> Prev
+              <Button
+                variant="outline" size="sm" onClick={() => go("prev")} disabled={!hasPrev}
+                aria-label="Previous question" aria-keyshortcuts="ArrowLeft"
+              >
+                <ChevronLeft className="w-4 h-4 mr-1" aria-hidden="true" /> Prev
               </Button>
               <div className="flex items-center gap-3">
                 <Button
@@ -340,14 +377,18 @@ function ReaderDialog({
                   variant={reviewed.has(viewing.id) ? "default" : "outline"}
                   onClick={toggleReviewed}
                   className="hidden sm:inline-flex"
+                  aria-pressed={reviewed.has(viewing.id)}
                 >
-                  <CheckCircle2 className="w-4 h-4 mr-1" />
+                  <CheckCircle2 className="w-4 h-4 mr-1" aria-hidden="true" />
                   {reviewed.has(viewing.id) ? "Reviewed" : "Mark reviewed"}
                 </Button>
-                <span className="hidden md:inline mono-label">← → or swipe</span>
+                <span className="hidden md:inline mono-label" aria-hidden="true">← → or swipe</span>
               </div>
-              <Button size="sm" onClick={() => go("next")} disabled={!hasNext}>
-                Next <ChevronRight className="w-4 h-4 ml-1" />
+              <Button
+                size="sm" onClick={() => go("next")} disabled={!hasNext}
+                aria-label="Next question" aria-keyshortcuts="ArrowRight"
+              >
+                Next <ChevronRight className="w-4 h-4 ml-1" aria-hidden="true" />
               </Button>
             </div>
           </div>
