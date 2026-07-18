@@ -188,26 +188,34 @@ function NotesPage() {
 
       {/* Editor dialog */}
       <Dialog open={!!active} onOpenChange={(v) => !v && setActiveId(null)}>
-        <DialogContent className="max-w-3xl w-[96vw] max-h-[92vh] overflow-hidden p-0 gap-0">
+        <DialogContent className="max-w-3xl w-[96vw] max-h-[92vh] overflow-hidden p-0 gap-0" aria-label="Note editor">
           {active && (
             <div className="flex flex-col max-h-[92vh]">
               <div className="px-6 pt-5 pb-3 border-b bg-card">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="mono-label">Editing note</span>
-                  <Button variant="ghost" size="icon" onClick={() => setActiveId(null)} className="h-8 w-8"><X className="w-4 h-4" /></Button>
+                  <span className="mono-label" id="note-editor-label">Editing note</span>
+                  <Button variant="ghost" size="icon" onClick={() => setActiveId(null)} className="h-8 w-8" aria-label="Close editor"><X className="w-4 h-4" aria-hidden="true" /></Button>
                 </div>
-                <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Title" className="text-xl font-display font-bold border-0 px-0 focus-visible:ring-0 shadow-none h-auto" />
-                <Input value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="Topic (optional)" className="text-sm border-0 px-0 focus-visible:ring-0 shadow-none text-muted-foreground h-auto mt-1" />
+                <DialogHeader>
+                  <DialogTitle className="sr-only">{title || "Untitled note"}</DialogTitle>
+                  <DialogDescription className="sr-only">Edit the note title, topic, and markdown content. Switch tabs to preview.</DialogDescription>
+                </DialogHeader>
+                <label htmlFor="note-title" className="sr-only">Title</label>
+                <Input id="note-title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Title" className="text-xl font-display font-bold border-0 px-0 focus-visible:ring-0 shadow-none h-auto" />
+                <label htmlFor="note-topic" className="sr-only">Topic</label>
+                <Input id="note-topic" value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="Topic (optional)" className="text-sm border-0 px-0 focus-visible:ring-0 shadow-none text-muted-foreground h-auto mt-1" />
               </div>
               <Tabs defaultValue="write" className="flex-1 flex flex-col overflow-hidden">
                 <div className="px-6 pt-3 border-b bg-card">
-                  <TabsList className="grid grid-cols-2 w-fit">
-                    <TabsTrigger value="write"><Pencil className="w-3.5 h-3.5 mr-1" /> Write</TabsTrigger>
-                    <TabsTrigger value="preview"><Eye className="w-3.5 h-3.5 mr-1" /> Preview</TabsTrigger>
+                  <TabsList className="grid grid-cols-2 w-fit" aria-label="Editor view">
+                    <TabsTrigger value="write"><Pencil className="w-3.5 h-3.5 mr-1" aria-hidden="true" /> Write</TabsTrigger>
+                    <TabsTrigger value="preview"><Eye className="w-3.5 h-3.5 mr-1" aria-hidden="true" /> Preview</TabsTrigger>
                   </TabsList>
                 </div>
                 <TabsContent value="write" className="flex-1 overflow-y-auto reader-scroll m-0 p-6">
+                  <label htmlFor="note-content" className="sr-only">Note content in markdown</label>
                   <Textarea
+                    id="note-content"
                     value={content}
                     onChange={(e) => setContent(e.target.value)}
                     placeholder="Write your notes in markdown…"
@@ -221,15 +229,15 @@ function NotesPage() {
                 </TabsContent>
               </Tabs>
               <div className="px-4 md:px-6 py-3 border-t bg-card flex items-center justify-between gap-2">
-                <Button variant="ghost" size="sm" onClick={() => remove(active.id)}>
-                  <Trash2 className="w-4 h-4 mr-1 text-destructive" /> Delete
+                <Button variant="ghost" size="sm" onClick={() => remove(active.id)} aria-label="Delete note">
+                  <Trash2 className="w-4 h-4 mr-1 text-destructive" aria-hidden="true" /> Delete
                 </Button>
                 <div className="flex gap-2">
                   <Button variant="outline" size="sm" onClick={() => { save(); setReadingId(active.id); setActiveId(null); }} disabled={!content.trim()}>
-                    <BookOpen className="w-4 h-4 mr-1" /> Read
+                    <BookOpen className="w-4 h-4 mr-1" aria-hidden="true" /> Read
                   </Button>
                   <Button size="sm" onClick={save} disabled={saving}>
-                    <Save className="w-4 h-4 mr-1" /> {saving ? "Saving…" : "Save"}
+                    <Save className="w-4 h-4 mr-1" aria-hidden="true" /> {saving ? "Saving…" : "Save"}
                   </Button>
                 </div>
               </div>
