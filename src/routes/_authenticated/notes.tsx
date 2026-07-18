@@ -248,47 +248,73 @@ function NotesPage() {
 
       {/* Reader dialog */}
       <Dialog open={!!reading} onOpenChange={(v) => !v && setReadingId(null)}>
-        <DialogContent className="max-w-4xl w-[100vw] sm:w-[96vw] h-[100dvh] sm:h-auto sm:max-h-[92vh] overflow-hidden p-0 gap-0 sm:border-2 rounded-none sm:rounded-lg">
+        <DialogContent
+          className="max-w-4xl w-[100vw] sm:w-[96vw] h-[100dvh] sm:h-auto sm:max-h-[92vh] overflow-hidden p-0 gap-0 sm:border-2 rounded-none sm:rounded-lg"
+          aria-label="Note reader"
+        >
           {reading && (
-            <div className="flex flex-col h-[100dvh] sm:h-auto sm:max-h-[92vh]" {...readTouch}>
-              <div className="h-1 bg-muted relative">
+            <div
+              className="flex flex-col h-[100dvh] sm:h-auto sm:max-h-[92vh]"
+              {...readTouch}
+              role="region"
+              aria-roledescription="carousel"
+              aria-label={`Note ${readIdx + 1} of ${filtered.length}`}
+            >
+              <div
+                className="h-1 bg-muted relative"
+                role="progressbar"
+                aria-label="Reading progress"
+                aria-valuemin={0}
+                aria-valuemax={filtered.length}
+                aria-valuenow={readIdx + 1}
+                aria-valuetext={`Note ${readIdx + 1} of ${filtered.length}`}
+              >
                 <div className="absolute inset-y-0 left-0 bg-brand-blue transition-all duration-300" style={{ width: `${filtered.length ? ((readIdx + 1) / filtered.length) * 100 : 0}%` }} />
               </div>
               <div className="px-4 md:px-10 pt-4 md:pt-6 pb-4 md:pb-5 border-b bg-card">
                 <div className="flex items-center justify-between mb-2 md:mb-3">
-                  <div className="mono-label">
-                    <span className="text-foreground">{String(readIdx + 1).padStart(2, "0")}</span> / {String(filtered.length).padStart(2, "0")}
+                  <div className="mono-label" aria-live="polite" aria-atomic="true">
+                    <span className="sr-only">Note </span>
+                    <span className="text-foreground">{String(readIdx + 1).padStart(2, "0")}</span>
+                    <span aria-hidden="true"> / </span>
+                    <span className="sr-only">of </span>
+                    {String(filtered.length).padStart(2, "0")}
                   </div>
                   <div className="flex gap-1">
-                    <Button variant="ghost" size="icon" onClick={() => { setActiveId(reading.id); setReadingId(null); }} className="h-9 w-9" aria-label="Edit">
-                      <Pencil className="w-4 h-4" />
+                    <Button variant="ghost" size="icon" onClick={() => { setActiveId(reading.id); setReadingId(null); }} className="h-9 w-9" aria-label="Edit this note">
+                      <Pencil className="w-4 h-4" aria-hidden="true" />
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => setReadingId(null)} className="h-9 w-9" aria-label="Close"><X className="w-4 h-4" /></Button>
+                    <Button variant="ghost" size="icon" onClick={() => setReadingId(null)} className="h-9 w-9" aria-label="Close reader"><X className="w-4 h-4" aria-hidden="true" /></Button>
                   </div>
                 </div>
-                {reading.topic && <span className="chip !bg-muted mb-2 md:mb-3 inline-flex">{reading.topic}</span>}
+                {reading.topic && <span className="chip !bg-muted mb-2 md:mb-3 inline-flex"><span className="sr-only">Topic: </span>{reading.topic}</span>}
                 <DialogHeader>
                   <DialogTitle className="font-display text-xl md:text-3xl leading-tight tracking-tight">
                     {reading.title || "Untitled"}
                   </DialogTitle>
+                  <DialogDescription className="sr-only">
+                    Note {readIdx + 1} of {filtered.length}. Use left and right arrow keys or swipe to navigate.
+                  </DialogDescription>
                 </DialogHeader>
-                <p className="mono-label mt-2">Updated {new Date(reading.updated_at).toLocaleDateString()}</p>
+                <p className="mono-label mt-2"><span className="sr-only">Last updated </span>Updated {new Date(reading.updated_at).toLocaleDateString()}</p>
               </div>
-              <div
+              <article
                 key={reading.id}
                 className={`flex-1 overflow-y-auto reader-scroll reader-bg transition-all duration-150 ease-out ${readSlide}`}
+                aria-label={`Content of note: ${reading.title || "Untitled"}`}
+                tabIndex={0}
               >
                 <div className="reader-shell">
                   <MarkdownView content={reading.content} />
                 </div>
-              </div>
+              </article>
               <div className="px-4 md:px-6 py-3 border-t bg-card flex items-center justify-between gap-2">
-                <Button variant="outline" size="sm" onClick={() => readGo("prev")} disabled={!hasPrev}>
-                  <ChevronLeft className="w-4 h-4 mr-1" /> Prev
+                <Button variant="outline" size="sm" onClick={() => readGo("prev")} disabled={!hasPrev} aria-label="Previous note" aria-keyshortcuts="ArrowLeft">
+                  <ChevronLeft className="w-4 h-4 mr-1" aria-hidden="true" /> Prev
                 </Button>
-                <span className="hidden md:inline mono-label">← → or swipe</span>
-                <Button size="sm" onClick={() => readGo("next")} disabled={!hasNext}>
-                  Next <ChevronRight className="w-4 h-4 ml-1" />
+                <span className="hidden md:inline mono-label" aria-hidden="true">← → or swipe</span>
+                <Button size="sm" onClick={() => readGo("next")} disabled={!hasNext} aria-label="Next note" aria-keyshortcuts="ArrowRight">
+                  Next <ChevronRight className="w-4 h-4 ml-1" aria-hidden="true" />
                 </Button>
               </div>
             </div>
