@@ -107,8 +107,8 @@ function QuestionsPage() {
       <div className="panel p-3 mb-5 md:sticky md:top-16 md:z-20 backdrop-blur bg-card/85">
         <div className="flex gap-2 items-center">
           <div className="relative flex-1 min-w-0">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <Input placeholder="Search…" className="pl-9 h-10 border-0 bg-muted focus-visible:ring-1" value={search} onChange={(e) => setSearch(e.target.value)} />
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+            <Input type="search" placeholder="Search…" aria-label="Search questions" className="pl-9 h-10 border-0 bg-muted focus-visible:ring-1" value={search} onChange={(e) => setSearch(e.target.value)} />
           </div>
           <Button
             size="icon"
