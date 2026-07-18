@@ -122,19 +122,21 @@ function NotesPage() {
         <div className="panel p-3 mb-5">
           <div className="flex gap-2 items-center flex-wrap">
             <div className="relative flex-1 min-w-[200px]">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-              <Input placeholder="Search notes…" className="pl-9 h-10 border-0 bg-muted" value={search} onChange={(e) => setSearch(e.target.value)} />
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+              <Input type="search" placeholder="Search notes…" aria-label="Search notes" className="pl-9 h-10 border-0 bg-muted" value={search} onChange={(e) => setSearch(e.target.value)} />
             </div>
-            <div className="mono-label">{stats.todayCount} today</div>
+            <div className="mono-label" aria-label={`${stats.todayCount} notes updated today`}>{stats.todayCount} today</div>
           </div>
           {topics.length > 0 && (
-            <div className="flex gap-2 items-center flex-nowrap mt-3 overflow-x-auto pb-1">
-              <span className="mono-label mr-1 shrink-0">Topic</span>
-              <button onClick={() => setFilterTopic("all")} className={`chip shrink-0 ${filterTopic === "all" ? "!bg-foreground !text-background !border-foreground" : ""}`}>all</button>
+            <div className="flex gap-2 items-center flex-nowrap mt-3 overflow-x-auto pb-1" role="group" aria-label="Filter by topic">
+              <span className="mono-label mr-1 shrink-0" aria-hidden="true">Topic</span>
+              <button onClick={() => setFilterTopic("all")} aria-pressed={filterTopic === "all"} className={`chip shrink-0 ${filterTopic === "all" ? "!bg-foreground !text-background !border-foreground" : ""}`}>all</button>
               {topics.map((t) => (
                 <button
                   key={t}
                   onClick={() => setFilterTopic(t)}
+                  aria-pressed={filterTopic === t}
+                  aria-label={`Topic: ${t}`}
                   className={`chip shrink-0 ${filterTopic === t ? "!bg-primary !text-primary-foreground !border-primary" : ""}`}
                 >{t}</button>
               ))}
