@@ -121,27 +121,31 @@ function QuestionsPage() {
           </Button>
         </div>
 
-        <div className="flex gap-1.5 items-center flex-nowrap mt-3 overflow-x-auto no-scrollbar pb-1">
-          <span className="mono-label mr-1 shrink-0">Diff</span>
+        <div className="flex gap-1.5 items-center flex-nowrap mt-3 overflow-x-auto no-scrollbar pb-1" role="group" aria-label="Filter by difficulty">
+          <span className="mono-label mr-1 shrink-0" aria-hidden="true">Diff</span>
           {["all", ...DIFFICULTIES].map((d) => (
             <button
               key={d}
               onClick={() => setFilterDiff(d)}
+              aria-pressed={filterDiff === d}
+              aria-label={`Difficulty: ${d}`}
               className={`chip shrink-0 transition ${filterDiff === d ? "!bg-foreground !text-background !border-foreground" : "hover:!border-foreground/40"}`}
             >
-              {d !== "all" && <span className={`w-1.5 h-1.5 rounded-full ${difficultyDot(d)}`} />}
+              {d !== "all" && <span className={`w-1.5 h-1.5 rounded-full ${difficultyDot(d)}`} aria-hidden="true" />}
               {d}
             </button>
           ))}
         </div>
 
         {categories.length > 0 && (
-          <div className="flex gap-1.5 items-center flex-nowrap mt-2 overflow-x-auto no-scrollbar pb-1">
-            <span className="mono-label mr-1 shrink-0">Cat</span>
+          <div className="flex gap-1.5 items-center flex-nowrap mt-2 overflow-x-auto no-scrollbar pb-1" role="group" aria-label="Filter by category">
+            <span className="mono-label mr-1 shrink-0" aria-hidden="true">Cat</span>
             {["all", ...categories].map((c) => (
               <button
                 key={c}
                 onClick={() => setFilterCat(c)}
+                aria-pressed={filterCat === c}
+                aria-label={`Category: ${c}`}
                 className={`chip shrink-0 transition ${filterCat === c ? "!bg-primary !text-primary-foreground !border-primary" : "hover:!border-primary/50"}`}
               >
                 {c}
