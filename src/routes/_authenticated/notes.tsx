@@ -154,25 +154,29 @@ function NotesPage() {
             {filtered.map((n) => (
               <div
                 key={n.id}
-                className="panel panel-hover p-5 flex flex-col cursor-pointer group min-h-[180px]"
+                className="panel panel-hover p-5 flex flex-col cursor-pointer group min-h-[180px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 onClick={() => setActiveId(n.id)}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setActiveId(n.id); } }}
+                role="button"
+                tabIndex={0}
+                aria-label={`Edit note: ${n.title || "Untitled"}`}
               >
                 <div className="flex items-start justify-between gap-2 mb-3">
-                  <FileText className="w-4 h-4 text-brand-blue shrink-0 mt-0.5" />
-                  {n.topic && <span className="chip !bg-muted text-xs">{n.topic}</span>}
+                  <FileText className="w-4 h-4 text-brand-blue shrink-0 mt-0.5" aria-hidden="true" />
+                  {n.topic && <span className="chip !bg-muted text-xs"><span className="sr-only">Topic: </span>{n.topic}</span>}
                 </div>
                 <h3 className="font-display font-semibold text-base leading-snug line-clamp-2">{n.title || "Untitled"}</h3>
                 <p className="text-[13px] text-muted-foreground mt-2 line-clamp-4 leading-relaxed flex-1">
                   {(n.content || "No content yet…").replace(/[#*`>_-]+/g, " ").slice(0, 220)}
                 </p>
                 <div className="mt-4 pt-3 border-t border-border/60 flex items-center justify-between opacity-70 group-hover:opacity-100">
-                  <span className="mono-label">{new Date(n.updated_at).toLocaleDateString()}</span>
+                  <span className="mono-label"><span className="sr-only">Updated </span>{new Date(n.updated_at).toLocaleDateString()}</span>
                   <div className="flex gap-1">
-                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); setReadingId(n.id); }} aria-label="Read">
-                      <BookOpen className="w-3.5 h-3.5" />
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); setReadingId(n.id); }} aria-label={`Read note: ${n.title || "Untitled"}`}>
+                      <BookOpen className="w-3.5 h-3.5" aria-hidden="true" />
                     </Button>
-                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); remove(n.id); }} aria-label="Delete">
-                      <Trash2 className="w-3.5 h-3.5 text-destructive" />
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); remove(n.id); }} aria-label={`Delete note: ${n.title || "Untitled"}`}>
+                      <Trash2 className="w-3.5 h-3.5 text-destructive" aria-hidden="true" />
                     </Button>
                   </div>
                 </div>
