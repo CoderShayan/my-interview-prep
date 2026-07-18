@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Trash2, Pencil, Star, Search, BookOpen, ChevronLeft, ChevronRight, X, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
@@ -107,41 +107,46 @@ function QuestionsPage() {
       <div className="panel p-3 mb-5 md:sticky md:top-16 md:z-20 backdrop-blur bg-card/85">
         <div className="flex gap-2 items-center">
           <div className="relative flex-1 min-w-0">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <Input placeholder="Search…" className="pl-9 h-10 border-0 bg-muted focus-visible:ring-1" value={search} onChange={(e) => setSearch(e.target.value)} />
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+            <Input type="search" placeholder="Search…" aria-label="Search questions" className="pl-9 h-10 border-0 bg-muted focus-visible:ring-1" value={search} onChange={(e) => setSearch(e.target.value)} />
           </div>
           <Button
             size="icon"
             variant={favOnly ? "default" : "outline"}
             onClick={() => setFavOnly((v) => !v)}
             className="h-10 w-10 shrink-0"
-            aria-label="Favorites only"
+            aria-label="Show favorites only"
+            aria-pressed={favOnly}
           >
-            <Star className={`w-4 h-4 ${favOnly ? "fill-current" : ""}`} />
+            <Star className={`w-4 h-4 ${favOnly ? "fill-current" : ""}`} aria-hidden="true" />
           </Button>
         </div>
 
-        <div className="flex gap-1.5 items-center flex-nowrap mt-3 overflow-x-auto no-scrollbar pb-1">
-          <span className="mono-label mr-1 shrink-0">Diff</span>
+        <div className="flex gap-1.5 items-center flex-nowrap mt-3 overflow-x-auto no-scrollbar pb-1" role="group" aria-label="Filter by difficulty">
+          <span className="mono-label mr-1 shrink-0" aria-hidden="true">Diff</span>
           {["all", ...DIFFICULTIES].map((d) => (
             <button
               key={d}
               onClick={() => setFilterDiff(d)}
+              aria-pressed={filterDiff === d}
+              aria-label={`Difficulty: ${d}`}
               className={`chip shrink-0 transition ${filterDiff === d ? "!bg-foreground !text-background !border-foreground" : "hover:!border-foreground/40"}`}
             >
-              {d !== "all" && <span className={`w-1.5 h-1.5 rounded-full ${difficultyDot(d)}`} />}
+              {d !== "all" && <span className={`w-1.5 h-1.5 rounded-full ${difficultyDot(d)}`} aria-hidden="true" />}
               {d}
             </button>
           ))}
         </div>
 
         {categories.length > 0 && (
-          <div className="flex gap-1.5 items-center flex-nowrap mt-2 overflow-x-auto no-scrollbar pb-1">
-            <span className="mono-label mr-1 shrink-0">Cat</span>
+          <div className="flex gap-1.5 items-center flex-nowrap mt-2 overflow-x-auto no-scrollbar pb-1" role="group" aria-label="Filter by category">
+            <span className="mono-label mr-1 shrink-0" aria-hidden="true">Cat</span>
             {["all", ...categories].map((c) => (
               <button
                 key={c}
                 onClick={() => setFilterCat(c)}
+                aria-pressed={filterCat === c}
+                aria-label={`Category: ${c}`}
                 className={`chip shrink-0 transition ${filterCat === c ? "!bg-primary !text-primary-foreground !border-primary" : "hover:!border-primary/50"}`}
               >
                 {c}
@@ -152,7 +157,7 @@ function QuestionsPage() {
       </div>
 
       {loading ? (
-        <p className="text-muted-foreground text-center py-10">Loading…</p>
+        <p className="text-muted-foreground text-center py-10" role="status" aria-live="polite">Loading questions…</p>
       ) : filtered.length === 0 ? (
         <div className="panel p-12 text-center">
           <p className="text-muted-foreground">No questions match. Try clearing filters or add a new one.</p>
@@ -163,22 +168,27 @@ function QuestionsPage() {
             <div
               key={q.id}
               onClick={() => setViewingId(q.id)}
-              className="panel panel-hover p-4 md:p-5 flex flex-col cursor-pointer group active:scale-[0.99] transition-transform"
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setViewingId(q.id); } }}
+              role="button"
+              tabIndex={0}
+              aria-label={`Open question: ${q.question}`}
+              className="panel panel-hover p-4 md:p-5 flex flex-col cursor-pointer group active:scale-[0.99] transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               <div className="flex items-start justify-between gap-2 mb-3">
                 <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
-                  <span className="chip !bg-muted">{q.category}</span>
+                  <span className="chip !bg-muted"><span className="sr-only">Category: </span>{q.category}</span>
                   <span className="chip">
-                    <span className={`w-1.5 h-1.5 rounded-full ${difficultyDot(q.difficulty)}`} />
-                    {q.difficulty}
+                    <span className={`w-1.5 h-1.5 rounded-full ${difficultyDot(q.difficulty)}`} aria-hidden="true" />
+                    <span className="sr-only">Difficulty: </span>{q.difficulty}
                   </span>
                 </div>
                 <button
                   onClick={(e) => { e.stopPropagation(); toggleFav(q); }}
                   className="shrink-0 -mt-1 -mr-1 p-1.5 rounded-md hover:bg-muted transition"
-                  aria-label="Favorite"
+                  aria-label={q.is_favorite ? "Remove from favorites" : "Add to favorites"}
+                  aria-pressed={q.is_favorite}
                 >
-                  <Star className={`w-4 h-4 ${q.is_favorite ? "fill-amber-400 text-amber-400" : "text-muted-foreground"}`} />
+                  <Star className={`w-4 h-4 ${q.is_favorite ? "fill-amber-400 text-amber-400" : "text-muted-foreground"}`} aria-hidden="true" />
                 </button>
               </div>
 
@@ -193,13 +203,13 @@ function QuestionsPage() {
               )}
 
               <div className="mt-4 pt-3 border-t border-border/60 flex items-center justify-between opacity-90 group-hover:opacity-100 transition">
-                <span className="mono-label inline-flex items-center gap-1"><BookOpen className="w-3 h-3" /> Read</span>
+                <span className="mono-label inline-flex items-center gap-1"><BookOpen className="w-3 h-3" aria-hidden="true" /> Read</span>
                 <div className="flex gap-1">
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); setEditing(q); setOpen(true); }} aria-label="Edit">
-                    <Pencil className="w-3.5 h-3.5" />
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); setEditing(q); setOpen(true); }} aria-label={`Edit question: ${q.question}`}>
+                    <Pencil className="w-3.5 h-3.5" aria-hidden="true" />
                   </Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); remove(q.id); }} aria-label="Delete">
-                    <Trash2 className="w-3.5 h-3.5 text-destructive" />
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); remove(q.id); }} aria-label={`Delete question: ${q.question}`}>
+                    <Trash2 className="w-3.5 h-3.5 text-destructive" aria-hidden="true" />
                   </Button>
                 </div>
               </div>
@@ -266,44 +276,72 @@ function ReaderDialog({
 
   return (
     <Dialog open={!!viewing} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-w-4xl w-[100vw] sm:w-[96vw] h-[100dvh] sm:h-auto sm:max-h-[92vh] overflow-hidden p-0 gap-0 sm:border-2 rounded-none sm:rounded-lg">
+      <DialogContent
+        className="max-w-4xl w-[100vw] sm:w-[96vw] h-[100dvh] sm:h-auto sm:max-h-[92vh] overflow-hidden p-0 gap-0 sm:border-2 rounded-none sm:rounded-lg"
+        aria-label="Question reader"
+      >
         {viewing && (
           <div
             className="flex flex-col h-[100dvh] sm:h-auto sm:max-h-[92vh]"
             {...touchHandlers}
+            role="region"
+            aria-roledescription="carousel"
+            aria-label={`Question ${idx + 1} of ${list.length}`}
           >
             {/* Progress bar */}
-            <div className="h-1 bg-muted relative">
+            <div
+              className="h-1 bg-muted relative"
+              role="progressbar"
+              aria-label="Reading progress"
+              aria-valuemin={0}
+              aria-valuemax={list.length}
+              aria-valuenow={idx + 1}
+              aria-valuetext={`Question ${idx + 1} of ${list.length}`}
+            >
               <div className="absolute inset-y-0 left-0 bg-brand-red transition-all duration-300" style={{ width: `${progress}%` }} />
             </div>
 
             {/* Header */}
             <div className="px-4 md:px-10 pt-4 md:pt-6 pb-4 md:pb-5 border-b bg-card">
               <div className="flex items-center justify-between mb-2 md:mb-3">
-                <div className="mono-label">
-                  <span className="text-foreground">{String(idx + 1).padStart(2, "0")}</span> / {String(list.length).padStart(2, "0")}
+                <div className="mono-label" aria-live="polite" aria-atomic="true">
+                  <span className="sr-only">Question </span>
+                  <span className="text-foreground">{String(idx + 1).padStart(2, "0")}</span>
+                  <span aria-hidden="true"> / </span>
+                  <span className="sr-only">of </span>
+                  {String(list.length).padStart(2, "0")}
                 </div>
                 <div className="flex items-center gap-1">
-                  <Button variant="ghost" size="icon" onClick={toggleReviewed} className="h-9 w-9 sm:hidden" aria-label="Mark reviewed">
-                    <CheckCircle2 className={`w-4 h-4 ${reviewed.has(viewing.id) ? "text-brand-blue" : ""}`} />
+                  <Button
+                    variant="ghost" size="icon" onClick={toggleReviewed}
+                    className="h-9 w-9 sm:hidden"
+                    aria-label={reviewed.has(viewing.id) ? "Unmark as reviewed" : "Mark as reviewed"}
+                    aria-pressed={reviewed.has(viewing.id)}
+                  >
+                    <CheckCircle2 className={`w-4 h-4 ${reviewed.has(viewing.id) ? "text-brand-blue" : ""}`} aria-hidden="true" />
                   </Button>
-                  <Button variant="ghost" size="icon" onClick={() => onToggleFav(viewing)} className="h-9 w-9" aria-label="Favorite">
-                    <Star className={`w-4 h-4 ${viewing.is_favorite ? "fill-amber-400 text-amber-400" : ""}`} />
+                  <Button
+                    variant="ghost" size="icon" onClick={() => onToggleFav(viewing)}
+                    className="h-9 w-9"
+                    aria-label={viewing.is_favorite ? "Remove from favorites" : "Add to favorites"}
+                    aria-pressed={viewing.is_favorite}
+                  >
+                    <Star className={`w-4 h-4 ${viewing.is_favorite ? "fill-amber-400 text-amber-400" : ""}`} aria-hidden="true" />
                   </Button>
-                  <Button variant="ghost" size="icon" onClick={onClose} className="h-9 w-9" aria-label="Close">
-                    <X className="w-4 h-4" />
+                  <Button variant="ghost" size="icon" onClick={onClose} className="h-9 w-9" aria-label="Close reader">
+                    <X className="w-4 h-4" aria-hidden="true" />
                   </Button>
                 </div>
               </div>
               <div className="flex items-center gap-1.5 flex-wrap mb-3">
-                <span className="chip !bg-muted">{viewing.category}</span>
+                <span className="chip !bg-muted"><span className="sr-only">Category: </span>{viewing.category}</span>
                 <span className="chip">
-                  <span className={`w-1.5 h-1.5 rounded-full ${difficultyDot(viewing.difficulty)}`} />
-                  {viewing.difficulty}
+                  <span className={`w-1.5 h-1.5 rounded-full ${difficultyDot(viewing.difficulty)}`} aria-hidden="true" />
+                  <span className="sr-only">Difficulty: </span>{viewing.difficulty}
                 </span>
                 {reviewed.has(viewing.id) && (
                   <span className="chip !border-brand-blue text-brand-blue">
-                    <CheckCircle2 className="w-3 h-3" /> Reviewed
+                    <CheckCircle2 className="w-3 h-3" aria-hidden="true" /> Reviewed
                   </span>
                 )}
               </div>
@@ -311,28 +349,37 @@ function ReaderDialog({
                 <DialogTitle className="font-display text-xl md:text-3xl leading-tight tracking-tight">
                   {viewing.question}
                 </DialogTitle>
+                <DialogDescription className="sr-only">
+                  Question {idx + 1} of {list.length}. Category {viewing.category}, difficulty {viewing.difficulty}. Use left and right arrow keys or swipe to navigate.
+                </DialogDescription>
               </DialogHeader>
             </div>
 
             {/* Body */}
-            <div
+            <article
               key={viewing.id}
               className={`flex-1 overflow-y-auto reader-scroll reader-bg transition-all duration-150 ease-out ${slideClass}`}
+              aria-label={`Answer to: ${viewing.question}`}
+              tabIndex={0}
             >
               <div className="reader-shell">
-                <div className="flex items-center gap-3 mb-6">
+                <div className="flex items-center gap-3 mb-6" aria-hidden="true">
                   <span className="h-px flex-1 bg-border" />
                   <span className="mono-label !text-brand-red">Answer</span>
                   <span className="h-px flex-1 bg-border" />
                 </div>
+                <h2 className="sr-only">Answer</h2>
                 <MarkdownView content={viewing.answer ?? ""} />
               </div>
-            </div>
+            </article>
 
             {/* Footer nav */}
             <div className="px-4 md:px-6 py-3 border-t bg-card flex items-center justify-between gap-2">
-              <Button variant="outline" size="sm" onClick={() => go("prev")} disabled={!hasPrev}>
-                <ChevronLeft className="w-4 h-4 mr-1" /> Prev
+              <Button
+                variant="outline" size="sm" onClick={() => go("prev")} disabled={!hasPrev}
+                aria-label="Previous question" aria-keyshortcuts="ArrowLeft"
+              >
+                <ChevronLeft className="w-4 h-4 mr-1" aria-hidden="true" /> Prev
               </Button>
               <div className="flex items-center gap-3">
                 <Button
@@ -340,14 +387,18 @@ function ReaderDialog({
                   variant={reviewed.has(viewing.id) ? "default" : "outline"}
                   onClick={toggleReviewed}
                   className="hidden sm:inline-flex"
+                  aria-pressed={reviewed.has(viewing.id)}
                 >
-                  <CheckCircle2 className="w-4 h-4 mr-1" />
+                  <CheckCircle2 className="w-4 h-4 mr-1" aria-hidden="true" />
                   {reviewed.has(viewing.id) ? "Reviewed" : "Mark reviewed"}
                 </Button>
-                <span className="hidden md:inline mono-label">← → or swipe</span>
+                <span className="hidden md:inline mono-label" aria-hidden="true">← → or swipe</span>
               </div>
-              <Button size="sm" onClick={() => go("next")} disabled={!hasNext}>
-                Next <ChevronRight className="w-4 h-4 ml-1" />
+              <Button
+                size="sm" onClick={() => go("next")} disabled={!hasNext}
+                aria-label="Next question" aria-keyshortcuts="ArrowRight"
+              >
+                Next <ChevronRight className="w-4 h-4 ml-1" aria-hidden="true" />
               </Button>
             </div>
           </div>
@@ -388,17 +439,22 @@ function QuestionDialog({ editing, onDone }: { editing: Q | null; onDone: () => 
 
   return (
     <DialogContent className="max-w-lg">
-      <DialogHeader><DialogTitle>{editing ? "Edit question" : "Add question"}</DialogTitle></DialogHeader>
+      <DialogHeader>
+        <DialogTitle>{editing ? "Edit question" : "Add question"}</DialogTitle>
+        <DialogDescription>
+          {editing ? "Update the question, answer, and metadata." : "Add a new question to your prep bank. Markdown is supported in the answer."}
+        </DialogDescription>
+      </DialogHeader>
       <div className="space-y-4">
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-2">
-            <Label>Category</Label>
-            <Input value={category} onChange={(e) => setCategory(e.target.value)} placeholder="e.g. React, DSA" />
+            <Label htmlFor="q-category">Category</Label>
+            <Input id="q-category" value={category} onChange={(e) => setCategory(e.target.value)} placeholder="e.g. React, DSA" />
           </div>
           <div className="space-y-2">
-            <Label>Difficulty</Label>
+            <Label htmlFor="q-difficulty">Difficulty</Label>
             <Select value={difficulty} onValueChange={setDifficulty}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectTrigger id="q-difficulty" aria-label="Difficulty"><SelectValue /></SelectTrigger>
               <SelectContent>
                 {DIFFICULTIES.map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}
               </SelectContent>
@@ -406,12 +462,12 @@ function QuestionDialog({ editing, onDone }: { editing: Q | null; onDone: () => 
           </div>
         </div>
         <div className="space-y-2">
-          <Label>Question</Label>
-          <Textarea value={question} onChange={(e) => setQuestion(e.target.value)} rows={3} />
+          <Label htmlFor="q-question">Question</Label>
+          <Textarea id="q-question" value={question} onChange={(e) => setQuestion(e.target.value)} rows={3} required aria-required="true" />
         </div>
         <div className="space-y-2">
-          <Label>Answer / Notes <span className="text-xs text-muted-foreground">(markdown supported)</span></Label>
-          <Textarea value={answer} onChange={(e) => setAnswer(e.target.value)} rows={8} className="font-mono text-sm" />
+          <Label htmlFor="q-answer">Answer / Notes <span className="text-xs text-muted-foreground">(markdown supported)</span></Label>
+          <Textarea id="q-answer" value={answer} onChange={(e) => setAnswer(e.target.value)} rows={8} className="font-mono text-sm" />
         </div>
       </div>
       <DialogFooter>
