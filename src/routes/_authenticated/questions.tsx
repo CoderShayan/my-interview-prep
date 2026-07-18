@@ -115,9 +115,10 @@ function QuestionsPage() {
             variant={favOnly ? "default" : "outline"}
             onClick={() => setFavOnly((v) => !v)}
             className="h-10 w-10 shrink-0"
-            aria-label="Favorites only"
+            aria-label="Show favorites only"
+            aria-pressed={favOnly}
           >
-            <Star className={`w-4 h-4 ${favOnly ? "fill-current" : ""}`} />
+            <Star className={`w-4 h-4 ${favOnly ? "fill-current" : ""}`} aria-hidden="true" />
           </Button>
         </div>
 
