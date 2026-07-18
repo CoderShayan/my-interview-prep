@@ -434,17 +434,22 @@ function QuestionDialog({ editing, onDone }: { editing: Q | null; onDone: () => 
 
   return (
     <DialogContent className="max-w-lg">
-      <DialogHeader><DialogTitle>{editing ? "Edit question" : "Add question"}</DialogTitle></DialogHeader>
+      <DialogHeader>
+        <DialogTitle>{editing ? "Edit question" : "Add question"}</DialogTitle>
+        <DialogDescription>
+          {editing ? "Update the question, answer, and metadata." : "Add a new question to your prep bank. Markdown is supported in the answer."}
+        </DialogDescription>
+      </DialogHeader>
       <div className="space-y-4">
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-2">
-            <Label>Category</Label>
-            <Input value={category} onChange={(e) => setCategory(e.target.value)} placeholder="e.g. React, DSA" />
+            <Label htmlFor="q-category">Category</Label>
+            <Input id="q-category" value={category} onChange={(e) => setCategory(e.target.value)} placeholder="e.g. React, DSA" />
           </div>
           <div className="space-y-2">
-            <Label>Difficulty</Label>
+            <Label htmlFor="q-difficulty">Difficulty</Label>
             <Select value={difficulty} onValueChange={setDifficulty}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectTrigger id="q-difficulty" aria-label="Difficulty"><SelectValue /></SelectTrigger>
               <SelectContent>
                 {DIFFICULTIES.map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}
               </SelectContent>
@@ -452,12 +457,12 @@ function QuestionDialog({ editing, onDone }: { editing: Q | null; onDone: () => 
           </div>
         </div>
         <div className="space-y-2">
-          <Label>Question</Label>
-          <Textarea value={question} onChange={(e) => setQuestion(e.target.value)} rows={3} />
+          <Label htmlFor="q-question">Question</Label>
+          <Textarea id="q-question" value={question} onChange={(e) => setQuestion(e.target.value)} rows={3} required aria-required="true" />
         </div>
         <div className="space-y-2">
-          <Label>Answer / Notes <span className="text-xs text-muted-foreground">(markdown supported)</span></Label>
-          <Textarea value={answer} onChange={(e) => setAnswer(e.target.value)} rows={8} className="font-mono text-sm" />
+          <Label htmlFor="q-answer">Answer / Notes <span className="text-xs text-muted-foreground">(markdown supported)</span></Label>
+          <Textarea id="q-answer" value={answer} onChange={(e) => setAnswer(e.target.value)} rows={8} className="font-mono text-sm" />
         </div>
       </div>
       <DialogFooter>
