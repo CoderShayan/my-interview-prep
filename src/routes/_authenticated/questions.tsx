@@ -157,7 +157,7 @@ function QuestionsPage() {
       </div>
 
       {loading ? (
-        <p className="text-muted-foreground text-center py-10">Loading…</p>
+        <p className="text-muted-foreground text-center py-10" role="status" aria-live="polite">Loading questions…</p>
       ) : filtered.length === 0 ? (
         <div className="panel p-12 text-center">
           <p className="text-muted-foreground">No questions match. Try clearing filters or add a new one.</p>
