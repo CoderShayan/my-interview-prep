@@ -163,22 +163,27 @@ function QuestionsPage() {
             <div
               key={q.id}
               onClick={() => setViewingId(q.id)}
-              className="panel panel-hover p-4 md:p-5 flex flex-col cursor-pointer group active:scale-[0.99] transition-transform"
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setViewingId(q.id); } }}
+              role="button"
+              tabIndex={0}
+              aria-label={`Open question: ${q.question}`}
+              className="panel panel-hover p-4 md:p-5 flex flex-col cursor-pointer group active:scale-[0.99] transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               <div className="flex items-start justify-between gap-2 mb-3">
                 <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
-                  <span className="chip !bg-muted">{q.category}</span>
+                  <span className="chip !bg-muted"><span className="sr-only">Category: </span>{q.category}</span>
                   <span className="chip">
-                    <span className={`w-1.5 h-1.5 rounded-full ${difficultyDot(q.difficulty)}`} />
-                    {q.difficulty}
+                    <span className={`w-1.5 h-1.5 rounded-full ${difficultyDot(q.difficulty)}`} aria-hidden="true" />
+                    <span className="sr-only">Difficulty: </span>{q.difficulty}
                   </span>
                 </div>
                 <button
                   onClick={(e) => { e.stopPropagation(); toggleFav(q); }}
                   className="shrink-0 -mt-1 -mr-1 p-1.5 rounded-md hover:bg-muted transition"
-                  aria-label="Favorite"
+                  aria-label={q.is_favorite ? "Remove from favorites" : "Add to favorites"}
+                  aria-pressed={q.is_favorite}
                 >
-                  <Star className={`w-4 h-4 ${q.is_favorite ? "fill-amber-400 text-amber-400" : "text-muted-foreground"}`} />
+                  <Star className={`w-4 h-4 ${q.is_favorite ? "fill-amber-400 text-amber-400" : "text-muted-foreground"}`} aria-hidden="true" />
                 </button>
               </div>
 
@@ -193,13 +198,13 @@ function QuestionsPage() {
               )}
 
               <div className="mt-4 pt-3 border-t border-border/60 flex items-center justify-between opacity-90 group-hover:opacity-100 transition">
-                <span className="mono-label inline-flex items-center gap-1"><BookOpen className="w-3 h-3" /> Read</span>
+                <span className="mono-label inline-flex items-center gap-1"><BookOpen className="w-3 h-3" aria-hidden="true" /> Read</span>
                 <div className="flex gap-1">
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); setEditing(q); setOpen(true); }} aria-label="Edit">
-                    <Pencil className="w-3.5 h-3.5" />
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); setEditing(q); setOpen(true); }} aria-label={`Edit question: ${q.question}`}>
+                    <Pencil className="w-3.5 h-3.5" aria-hidden="true" />
                   </Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); remove(q.id); }} aria-label="Delete">
-                    <Trash2 className="w-3.5 h-3.5 text-destructive" />
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); remove(q.id); }} aria-label={`Delete question: ${q.question}`}>
+                    <Trash2 className="w-3.5 h-3.5 text-destructive" aria-hidden="true" />
                   </Button>
                 </div>
               </div>
