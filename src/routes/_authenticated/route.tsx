@@ -62,24 +62,31 @@ function AuthedLayout() {
           </Button>
         </div>
 
-        <nav className="md:hidden flex overflow-x-auto gap-1 px-4 pb-2 no-scrollbar">
+      </header>
+
+      <main className="container mx-auto px-3 sm:px-4 py-5 sm:py-8 md:py-10 pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:pb-10">
+        <Outlet />
+      </main>
+
+      {/* Mobile bottom tab bar — big tap targets */}
+      <nav
+        aria-label="Main navigation"
+        className="md:hidden fixed bottom-0 inset-x-0 z-40 border-t border-border bg-background/95 backdrop-blur pb-[env(safe-area-inset-bottom)]"
+      >
+        <div className="grid grid-cols-5">
           {LINKS.map((l) => (
             <Link
               key={l.to}
               to={l.to}
-              className="px-3 py-1.5 rounded-full text-xs font-medium text-muted-foreground bg-muted whitespace-nowrap flex items-center gap-1 shrink-0"
-              activeProps={{ className: "px-3 py-1.5 rounded-full text-xs font-semibold bg-foreground text-background whitespace-nowrap flex items-center gap-1 shrink-0" }}
+              className="flex flex-col items-center justify-center gap-1 py-2.5 text-[10px] font-medium text-muted-foreground min-w-0"
+              activeProps={{ className: "flex flex-col items-center justify-center gap-1 py-2.5 text-[10px] font-semibold text-primary min-w-0" }}
             >
-              <l.icon className="w-3.5 h-3.5" />
-              {l.label}
+              <l.icon className="w-5 h-5 shrink-0" aria-hidden="true" />
+              <span className="truncate max-w-full px-0.5">{l.label}</span>
             </Link>
           ))}
-        </nav>
-      </header>
-
-      <main className="container mx-auto px-4 py-8 md:py-10">
-        <Outlet />
-      </main>
+        </div>
+      </nav>
     </div>
   );
 }
