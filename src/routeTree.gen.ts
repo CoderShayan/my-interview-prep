@@ -16,7 +16,10 @@ import { Route as AuthenticatedQuestionsRouteImport } from './routes/_authentica
 import { Route as AuthenticatedProgressRouteImport } from './routes/_authenticated/progress'
 import { Route as AuthenticatedNotesRouteImport } from './routes/_authenticated/notes'
 import { Route as AuthenticatedMockInterviewRouteImport } from './routes/_authenticated/mock-interview'
+import { Route as AuthenticatedLearnRouteImport } from './routes/_authenticated/learn'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedLearnIndexRouteImport } from './routes/_authenticated/learn.index'
+import { Route as AuthenticatedLearnPythonRouteImport } from './routes/_authenticated/learn.python'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -53,20 +56,39 @@ const AuthenticatedMockInterviewRoute =
     path: '/mock-interview',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedLearnRoute = AuthenticatedLearnRouteImport.update({
+  id: '/learn',
+  path: '/learn',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedLearnIndexRoute = AuthenticatedLearnIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedLearnRoute,
+} as any)
+const AuthenticatedLearnPythonRoute =
+  AuthenticatedLearnPythonRouteImport.update({
+    id: '/python',
+    path: '/python',
+    getParentRoute: () => AuthenticatedLearnRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/learn': typeof AuthenticatedLearnRouteWithChildren
   '/mock-interview': typeof AuthenticatedMockInterviewRoute
   '/notes': typeof AuthenticatedNotesRoute
   '/progress': typeof AuthenticatedProgressRoute
   '/questions': typeof AuthenticatedQuestionsRoute
+  '/learn/python': typeof AuthenticatedLearnPythonRoute
+  '/learn/': typeof AuthenticatedLearnIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -76,6 +98,8 @@ export interface FileRoutesByTo {
   '/notes': typeof AuthenticatedNotesRoute
   '/progress': typeof AuthenticatedProgressRoute
   '/questions': typeof AuthenticatedQuestionsRoute
+  '/learn/python': typeof AuthenticatedLearnPythonRoute
+  '/learn': typeof AuthenticatedLearnIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -83,10 +107,13 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/learn': typeof AuthenticatedLearnRouteWithChildren
   '/_authenticated/mock-interview': typeof AuthenticatedMockInterviewRoute
   '/_authenticated/notes': typeof AuthenticatedNotesRoute
   '/_authenticated/progress': typeof AuthenticatedProgressRoute
   '/_authenticated/questions': typeof AuthenticatedQuestionsRoute
+  '/_authenticated/learn/python': typeof AuthenticatedLearnPythonRoute
+  '/_authenticated/learn/': typeof AuthenticatedLearnIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -94,10 +121,13 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/dashboard'
+    | '/learn'
     | '/mock-interview'
     | '/notes'
     | '/progress'
     | '/questions'
+    | '/learn/python'
+    | '/learn/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -107,16 +137,21 @@ export interface FileRouteTypes {
     | '/notes'
     | '/progress'
     | '/questions'
+    | '/learn/python'
+    | '/learn'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
     | '/_authenticated/dashboard'
+    | '/_authenticated/learn'
     | '/_authenticated/mock-interview'
     | '/_authenticated/notes'
     | '/_authenticated/progress'
     | '/_authenticated/questions'
+    | '/_authenticated/learn/python'
+    | '/_authenticated/learn/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -176,6 +211,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMockInterviewRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/learn': {
+      id: '/_authenticated/learn'
+      path: '/learn'
+      fullPath: '/learn'
+      preLoaderRoute: typeof AuthenticatedLearnRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -183,11 +225,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/learn/': {
+      id: '/_authenticated/learn/'
+      path: '/'
+      fullPath: '/learn/'
+      preLoaderRoute: typeof AuthenticatedLearnIndexRouteImport
+      parentRoute: typeof AuthenticatedLearnRoute
+    }
+    '/_authenticated/learn/python': {
+      id: '/_authenticated/learn/python'
+      path: '/python'
+      fullPath: '/learn/python'
+      preLoaderRoute: typeof AuthenticatedLearnPythonRouteImport
+      parentRoute: typeof AuthenticatedLearnRoute
+    }
   }
 }
 
+interface AuthenticatedLearnRouteChildren {
+  AuthenticatedLearnPythonRoute: typeof AuthenticatedLearnPythonRoute
+  AuthenticatedLearnIndexRoute: typeof AuthenticatedLearnIndexRoute
+}
+
+const AuthenticatedLearnRouteChildren: AuthenticatedLearnRouteChildren = {
+  AuthenticatedLearnPythonRoute: AuthenticatedLearnPythonRoute,
+  AuthenticatedLearnIndexRoute: AuthenticatedLearnIndexRoute,
+}
+
+const AuthenticatedLearnRouteWithChildren =
+  AuthenticatedLearnRoute._addFileChildren(AuthenticatedLearnRouteChildren)
+
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedLearnRoute: typeof AuthenticatedLearnRouteWithChildren
   AuthenticatedMockInterviewRoute: typeof AuthenticatedMockInterviewRoute
   AuthenticatedNotesRoute: typeof AuthenticatedNotesRoute
   AuthenticatedProgressRoute: typeof AuthenticatedProgressRoute
@@ -196,6 +266,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedLearnRoute: AuthenticatedLearnRouteWithChildren,
   AuthenticatedMockInterviewRoute: AuthenticatedMockInterviewRoute,
   AuthenticatedNotesRoute: AuthenticatedNotesRoute,
   AuthenticatedProgressRoute: AuthenticatedProgressRoute,

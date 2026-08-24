@@ -74,7 +74,7 @@ function AuthedLayout() {
         aria-label="Main navigation"
         className="md:hidden fixed bottom-0 inset-x-0 z-40 border-t border-border bg-background/95 backdrop-blur pb-[env(safe-area-inset-bottom)]"
       >
-        <div className="grid grid-cols-5">
+        <div className="grid grid-cols-6">
           {LINKS.map((l) => (
             <Link
               key={l.to}
