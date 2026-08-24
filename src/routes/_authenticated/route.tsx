@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet, redirect, Link, useRouter } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
-import { BookOpen, MessageSquare, NotebookPen, TrendingUp, LogOut, LayoutDashboard, BookOpenCheck } from "lucide-react";
+import { BookOpen, MessageSquare, NotebookPen, TrendingUp, LogOut, LayoutDashboard, BookOpenCheck, GraduationCap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -16,6 +16,7 @@ export const Route = createFileRoute("/_authenticated")({
 
 const LINKS = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/learn", label: "Learn", icon: GraduationCap },
   { to: "/questions", label: "Questions", icon: BookOpen },
   { to: "/mock-interview", label: "Mock", icon: MessageSquare },
   { to: "/notes", label: "Notes", icon: NotebookPen },
