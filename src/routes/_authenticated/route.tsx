@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet, redirect, Link, useRouter } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
-import { BookOpen, MessageSquare, NotebookPen, TrendingUp, LogOut, LayoutDashboard, BookOpenCheck } from "lucide-react";
+import { BookOpen, MessageSquare, NotebookPen, TrendingUp, LogOut, LayoutDashboard, BookOpenCheck, GraduationCap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -16,6 +16,7 @@ export const Route = createFileRoute("/_authenticated")({
 
 const LINKS = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/learn", label: "Learn", icon: GraduationCap },
   { to: "/questions", label: "Questions", icon: BookOpen },
   { to: "/mock-interview", label: "Mock", icon: MessageSquare },
   { to: "/notes", label: "Notes", icon: NotebookPen },
@@ -73,7 +74,7 @@ function AuthedLayout() {
         aria-label="Main navigation"
         className="md:hidden fixed bottom-0 inset-x-0 z-40 border-t border-border bg-background/95 backdrop-blur pb-[env(safe-area-inset-bottom)]"
       >
-        <div className="grid grid-cols-5">
+        <div className="grid grid-cols-6">
           {LINKS.map((l) => (
             <Link
               key={l.to}
