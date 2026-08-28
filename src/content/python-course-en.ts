@@ -608,4 +608,70 @@ def total(prices: list[float], tax: float = 0.18) -> float: ...
 
 > Rule of thumb: correct code first, readable code second, fast code last — and only where a profiler tells you it matters.`,
   },
+
+  "control-flow": {
+    title: "Control flow: if, loops and match",
+    summary: "Branching, for/while loops, loop-else and match-case.",
+    content: `## Making decisions
+
+A program does not always run straight from top to bottom. **Control flow** lets it choose a path or repeat work.
+
+### if / elif / else
+
+Python checks each condition in order and runs the first block that is true. If nothing is true, the \`else\` block runs.
+
+### Loops
+
+- \`for x in items\` — walks over any iterable (list, string, file, range).
+- \`while condition\` — repeats while the condition stays true.
+- \`break\` stops the loop, \`continue\` skips to the next round, \`pass\` does nothing.
+
+### The loop \`else\` block
+
+A loop can have an \`else\`. It runs **only when the loop ended normally**, without a \`break\`. This is handy for search code: "if I never found the item, do this".
+
+| Case | Does \`else\` run? |
+| --- | --- |
+| Loop finished all items | Yes |
+| Loop stopped with \`break\` | No |
+| Loop body raised an error | No |
+
+### match-case (Python 3.10+)
+
+\`match\` is not only a switch. It matches the **shape** of the data: lists, dicts, classes, and guards like \`case x if x > 5\`.
+
+> Common mistake: using \`while True\` without a clear exit. Always make sure some branch can \`break\`.`,
+  },
+
+  "data-structures": {
+    title: "Lists, tuples, dicts and sets",
+    summary: "Which container to use, and how fast each one is.",
+    content: `## The four main containers
+
+| Type | Written as | Ordered | Can change | Use it for |
+| --- | --- | --- | --- | --- |
+| list | \`[1, 2, 3]\` | Yes | Yes | A sequence of items |
+| tuple | \`(1, 2)\` | Yes | No | A fixed record, or a dict key |
+| dict | \`{"a": 1}\` | Yes (insertion) | Yes | Lookup by name |
+| set | \`{1, 2}\` | No | Yes | Unique items, fast membership |
+
+### Speed cheat-sheet
+
+| Operation | list | dict | set |
+| --- | --- | --- | --- |
+| Get by index / key | O(1) | O(1) | — |
+| \`x in container\` | O(n) | O(1) | O(1) |
+| Add item | O(1) | O(1) | O(1) |
+| Insert / delete at front | O(n) | O(1) | O(1) |
+
+If you check "is this value present?" many times, a **set or dict is much faster than a list**.
+
+### Slicing
+
+\`seq[start:stop:step]\` returns a new sequence. \`stop\` is not included. A negative step walks backwards, so \`seq[::-1]\` reverses it.
+
+### Comprehensions
+
+\`[f(x) for x in xs if cond]\` builds a list in one line. Dict and set versions exist too. They are usually shorter and faster than an empty container plus a loop.`,
+  },
 };
