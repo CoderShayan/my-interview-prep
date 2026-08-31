@@ -2,6 +2,7 @@
  * Real (SVG) diagrams per lesson — replaces ASCII art for the key topics.
  * Colors come from theme tokens so light/dark both look right.
  */
+import type { ReactElement } from "react";
 
 const stroke = "var(--border)";
 const fg = "var(--foreground)";
@@ -222,7 +223,7 @@ function Errors() {
   );
 }
 
-const MAP: Record<string, () => JSX.Element> = {
+const MAP: Record<string, () => ReactElement> = {
   intro: Intro,
   variables: Variables,
   "control-flow": ControlFlow,
