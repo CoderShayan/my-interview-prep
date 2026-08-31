@@ -222,7 +222,7 @@ function Errors() {
   );
 }
 
-const MAP: Record<string, () => JSX.Element> = {
+const MAP: Record<string, () => React.JSX.Element> = {
   intro: Intro,
   variables: Variables,
   "control-flow": ControlFlow,
