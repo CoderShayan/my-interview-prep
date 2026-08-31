@@ -52,7 +52,7 @@ function Dashboard() {
 
   useEffect(() => {
     try {
-      const raw = localStorage.getItem("prepdesk-python-done");
+      const raw = localStorage.getItem("prepdesk.python.done");
       setLessonsDone(raw ? (JSON.parse(raw) as string[]).length : 0);
     } catch { /* ignore */ }
 
