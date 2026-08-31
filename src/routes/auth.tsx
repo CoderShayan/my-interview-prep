@@ -164,9 +164,6 @@ function AuthPage() {
             </button>
           </div>
 
-          <p className="text-[11px] text-muted-foreground mt-10 leading-relaxed">
-            Tip: after your first sign-up, disable new signups from Cloud → Users → Auth Settings to keep this workspace private.
-          </p>
         </div>
       </div>
     </div>
